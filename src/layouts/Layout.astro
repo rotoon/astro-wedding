@@ -59,9 +59,21 @@ import '../styles/global.css'
         justify-content: center;
         align-items: center;
         z-index: 9999;
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 0.8s ease-out,
+          visibility 0.8s ease-out;
+        will-change: opacity, visibility;
+      }
+      .loading-screen.hidden {
+        opacity: 0;
+        visibility: hidden;
       }
       .main-container {
         opacity: 0;
+        transition: opacity 1s ease-in;
+        will-change: opacity;
       }
       .main-container.visible {
         opacity: 1;
@@ -91,11 +103,77 @@ import '../styles/global.css'
       onload="this.media='all'"
     />
 
-    <!-- Load utility script first to make functions globally available -->
-    <script
-      is:inline
-      src='/src/utils/script.js'
-    ></script>
+    <!-- Load utility functions inline to ensure they're available -->
+    <script is:inline>
+      // Utility functions for performance optimization
+
+      // Get element utility function - DOM element selection
+      window.getElement = function (selector) {
+        if (typeof selector === 'string') {
+          return document.querySelector(selector)
+        }
+        return selector
+      }
+
+      // Get elements - returns an array for multiple elements
+      window.getElements = function (selector) {
+        return Array.from(document.querySelectorAll(selector))
+      }
+
+      // Optimized throttle function for performance
+      window.throttle = function (func, limit) {
+        let inThrottle
+        return function () {
+          const args = arguments
+          const context = this
+          if (!inThrottle) {
+            func.apply(context, args)
+            inThrottle = true
+            setTimeout(() => (inThrottle = false), limit)
+          }
+        }
+      }
+
+      // Setup animation observer for reveal effects
+      document.addEventListener('DOMContentLoaded', function () {
+        // Setup animation reveal elements
+        setTimeout(setupAnimationObserver, 1500)
+      })
+
+      function setupAnimationObserver() {
+        if (!('IntersectionObserver' in window)) return
+
+        const observerOptions = {
+          threshold: 0.15,
+          rootMargin: '0px 0px -50px 0px',
+        }
+
+        const handleIntersection = (entries, observer) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return
+
+            // Use requestAnimationFrame for smoother animations
+            requestAnimationFrame(() => {
+              entry.target.classList.add('visible')
+            })
+
+            observer.unobserve(entry.target)
+          })
+        }
+
+        const observer = new IntersectionObserver(
+          handleIntersection,
+          observerOptions
+        )
+
+        // Observe all animation elements
+        document
+          .querySelectorAll('.reveal-title, .reveal-text, .reveal-item')
+          .forEach((element) => {
+            observer.observe(element)
+          })
+      }
+    </script>
 
     <!-- Consolidated GSAP scripts -->
     <script

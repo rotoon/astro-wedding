@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
-import imagemin from 'vite-plugin-imagemin'
+// import imagemin from 'vite-plugin-imagemin' - disabled due to image processing errors
 
 // https://astro.build/config
 export default defineConfig({
@@ -60,36 +60,7 @@ export default defineConfig({
 
     // Add plugins for optimization
     plugins: [
-      imagemin({
-        // Image optimization configuration
-        gifsicle: {
-          optimizationLevel: 7,
-          interlaced: false,
-        },
-        optipng: {
-          optimizationLevel: 7,
-        },
-        mozjpeg: {
-          quality: 80,
-          progressive: true,
-        },
-        pngquant: {
-          quality: [0.7, 0.8],
-          speed: 4,
-        },
-        svgo: {
-          plugins: [
-            {
-              name: 'removeViewBox',
-              active: false,
-            },
-            {
-              name: 'removeEmptyAttrs',
-              active: false,
-            },
-          ],
-        },
-      }),
+      // Imagemin disabled due to errors with image processing
     ],
 
     // Optimize asset loading

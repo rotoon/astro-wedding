@@ -182,8 +182,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!('IntersectionObserver' in window)) return
 
     const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '50px',
+      threshold: 0.15,
+      rootMargin: '0px 0px -50px 0px',
     }
 
     const handleIntersection = (entries, observer) => {
@@ -192,7 +192,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Use requestAnimationFrame for smoother animations
         requestAnimationFrame(() => {
-          entry.target.classList.add('visible')
+          // Add a tiny staggered delay based on element position for nicer effect
+          const delay = entry.target.dataset.delay || 0
+
+          setTimeout(() => {
+            entry.target.classList.add('visible')
+          }, delay)
         })
 
         observer.unobserve(entry.target)
@@ -209,7 +214,26 @@ document.addEventListener('DOMContentLoaded', function () {
       ...document.querySelectorAll('.reveal-title, .reveal-text, .reveal-item'),
     ]
 
-    elementsToObserve.forEach((element) => {
+    // Add slight staggered delays for elements in the same container
+    let currentContainer = null
+    let itemsInContainer = 0
+
+    elementsToObserve.forEach((element, index) => {
+      // Find the parent container
+      const container = element.closest('section') || element.parentElement
+
+      // If we're in a new container, reset the counter
+      if (container !== currentContainer) {
+        currentContainer = container
+        itemsInContainer = 0
+      }
+
+      // Add a small delay based on position in container (50ms increments)
+      if (element.classList.contains('reveal-item')) {
+        element.dataset.delay = 50 * itemsInContainer
+        itemsInContainer++
+      }
+
       observer.observe(element)
     })
 
@@ -243,18 +267,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Initialize components
   const initializeComponents = () => {
+    // Set up all observers and listeners first
     setupLazyLoading()
     setupAnimationObserver()
     setupMusicControl()
 
-    // Handle loading screen
-    setTimeout(() => {
-      const loadingScreen = getElement('.loading-screen')
-      const mainContainer = getElement('.main-container')
-
-      if (loadingScreen) loadingScreen.classList.add('hidden')
-      if (mainContainer) mainContainer.classList.add('visible')
-    }, 1500)
+    // Remove loading screen handling - it's now managed by LoadingAnimation.astro
   }
 
   // Initialize when document is ready

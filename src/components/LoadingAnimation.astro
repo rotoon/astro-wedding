@@ -4,6 +4,97 @@
     <div class='loading-bar-container'>
       <div class='loading-bar'></div>
     </div>
-    <di class='loading-text'>LOADING YOUR INVITATION</di>
+    <div class='loading-text'>LOADING YOUR INVITATION</div>
+    <div
+      class='loading-progress'
+      id='loading-progress'
+    >
+      <span
+        class='loading-percent'
+        id='loading-percent'
+        >0%</span
+      >
+    </div>
   </div>
 </div>
+
+<style>
+  .loading-progress {
+    margin-top: 0.5rem;
+    font-family: var(--body-font);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    display: none;
+  }
+</style>
+
+<script is:inline>
+  // Simple loading animation handler
+  document.addEventListener('DOMContentLoaded', function () {
+    // Set up elements
+    const progressElement = document.getElementById('loading-progress')
+    const percentElement = document.getElementById('loading-percent')
+    const loadingScreen = document.querySelector('.loading-screen')
+    const mainContainer = document.querySelector('.main-container')
+
+    // Show progress display after 3 seconds if still loading
+    setTimeout(function () {
+      if (
+        progressElement &&
+        loadingScreen &&
+        !loadingScreen.classList.contains('hidden')
+      ) {
+        progressElement.style.display = 'block'
+      }
+    }, 3000)
+
+    // Track progress animation
+    let progress = 0
+    const progressInterval = setInterval(function () {
+      if (progress < 95) {
+        progress += Math.random() * 5
+        progress = Math.min(progress, 95)
+
+        if (percentElement) {
+          percentElement.textContent = Math.round(progress) + '%'
+        }
+      }
+    }, 300)
+
+    // Function to hide loading screen and show content
+    function hideLoadingScreen() {
+      clearInterval(progressInterval)
+
+      if (percentElement) {
+        percentElement.textContent = '100%'
+      }
+
+      if (loadingScreen) {
+        loadingScreen.classList.add('hidden')
+      }
+
+      setTimeout(function () {
+        if (mainContainer) {
+          mainContainer.classList.add('visible')
+        }
+      }, 400)
+    }
+
+    // Force hide loading screen after max wait time
+    setTimeout(function () {
+      if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+        console.log('Force hiding loading screen after timeout')
+        hideLoadingScreen()
+      }
+    }, 8000)
+
+    // Process proper load event
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        console.log('Window loaded, hiding loading screen')
+        hideLoadingScreen()
+      }, 2000)
+    })
+  })
+</script>
