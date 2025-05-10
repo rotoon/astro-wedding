@@ -19,7 +19,7 @@ const galleryImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
             <div
               class='gallery-image'
               data-background={`img/sweet/${num}.jpg`}
-            />
+            ></div>
           </div>
         ))
       }
@@ -77,11 +77,11 @@ const galleryImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
   }
 
   const swiperOptions: SwiperOptions = {
-    effect: 'coverflow',
+    effect: 'slide',
     grabCursor: true,
-    centeredSlides: true,
+    centeredSlides: false,
     slidesPerView: 'auto',
-    initialSlide: 1,
+    initialSlide: 0,
     coverflowEffect: {
       rotate: 5,
       stretch: 0,
@@ -103,14 +103,18 @@ const galleryImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
         spaceBetween: 20,
       },
       768: {
-        slidesPerView: 'auto',
+        slidesPerView: 2,
+        spaceBetween: 20,
+      },
+      992: {
+        slidesPerView: 3,
         spaceBetween: 30,
       },
     },
     preloadImages: false,
     lazy: {
       loadPrevNext: true,
-      loadPrevNextAmount: 2,
+      loadPrevNextAmount: 3,
       loadOnTransitionStart: true,
       elementClass: 'gallery-image',
       loadingClass: 'swiper-lazy-loading',
@@ -188,7 +192,7 @@ const galleryImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
       }
 
       // Initialize first few slides
-      const preloadCount = Math.min(3, swiper.slides.length)
+      const preloadCount = Math.min(5, swiper.slides.length)
       for (let i = 0; i < preloadCount; i++) {
         const slide = swiper.slides[i]
         const image = slide?.querySelector('.gallery-image')
@@ -201,16 +205,18 @@ const galleryImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
       swiper.on('slideChangeTransitionStart', function () {
         const activeIndex = swiper.activeIndex
         const slides = swiper.slides
+        const slidesToLoad = 5 // Increased from 3 to 5 to preload more slides
 
-        // Load the current, previous and next slides
-        const loadIndices = [
-          activeIndex,
-          Math.max(0, activeIndex - 1),
-          Math.min(slides.length - 1, activeIndex + 1),
-        ]
+        // Calculate start and end indices for loading
+        const startIdx = Math.max(0, activeIndex - 1)
+        const endIdx = Math.min(
+          slides.length - 1,
+          activeIndex + slidesToLoad - 1
+        )
 
-        loadIndices.forEach((index) => {
-          const image = slides[index]?.querySelector('.gallery-image')
+        // Load the current visible slides plus some extras
+        for (let i = startIdx; i <= endIdx; i++) {
+          const image = slides[i]?.querySelector('.gallery-image')
           if (
             image &&
             image.dataset.background &&
@@ -220,7 +226,7 @@ const galleryImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
               image.style.backgroundImage = `url(${image.dataset.background})`
             })
           }
-        })
+        }
       })
     } catch (error) {
       console.error('Error initializing Swiper:', error)
