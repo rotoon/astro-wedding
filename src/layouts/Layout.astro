@@ -48,6 +48,9 @@ import '../styles/global.css'
         overflow-x: hidden;
         font-family: 'Montserrat', sans-serif;
       }
+      body.loaded {
+        overflow-y: auto;
+      }
       .loading-screen {
         position: fixed;
         top: 0;
@@ -62,8 +65,8 @@ import '../styles/global.css'
         opacity: 1;
         visibility: visible;
         transition:
-          opacity 0.8s ease-out,
-          visibility 0.8s ease-out;
+          opacity 0.8s cubic-bezier(0.65, 0, 0.35, 1),
+          visibility 0.8s cubic-bezier(0.65, 0, 0.35, 1);
         will-change: opacity, visibility;
       }
       .loading-screen.hidden {
@@ -72,7 +75,7 @@ import '../styles/global.css'
       }
       .main-container {
         opacity: 0;
-        transition: opacity 1s ease-in;
+        transition: opacity 0.8s cubic-bezier(0.33, 1, 0.68, 1);
         will-change: opacity;
       }
       .main-container.visible {
@@ -137,7 +140,7 @@ import '../styles/global.css'
       // Setup animation observer for reveal effects
       document.addEventListener('DOMContentLoaded', function () {
         // Setup animation reveal elements
-        setTimeout(setupAnimationObserver, 1500)
+        setTimeout(setupAnimationObserver, 2000)
       })
 
       function setupAnimationObserver() {
@@ -154,7 +157,11 @@ import '../styles/global.css'
 
             // Use requestAnimationFrame for smoother animations
             requestAnimationFrame(() => {
-              entry.target.classList.add('visible')
+              // Add a small staggered delay based on entry index for better visual flow
+              const delay = entry.target.dataset.animationDelay || 0
+              setTimeout(() => {
+                entry.target.classList.add('visible')
+              }, delay)
             })
 
             observer.unobserve(entry.target)
@@ -166,12 +173,28 @@ import '../styles/global.css'
           observerOptions
         )
 
-        // Observe all animation elements
-        document
-          .querySelectorAll('.reveal-title, .reveal-text, .reveal-item')
-          .forEach((element) => {
-            observer.observe(element)
+        // Apply staggered animation delays to create better flow
+        const elements = document.querySelectorAll(
+          '.reveal-title, .reveal-text, .reveal-item'
+        )
+
+        // Group elements by sections for staggered effects
+        const sections = {}
+        elements.forEach((el) => {
+          const section = el.closest('section') || 'default'
+          if (!sections[section]) {
+            sections[section] = []
+          }
+          sections[section].push(el)
+        })
+
+        // Apply staggered delays per section
+        Object.values(sections).forEach((sectionElements) => {
+          sectionElements.forEach((el, i) => {
+            el.dataset.animationDelay = i * 80 // 80ms between elements
+            observer.observe(el)
           })
+        })
       }
     </script>
 

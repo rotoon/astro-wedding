@@ -247,38 +247,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!bgm || !audioToggle) return
 
-    document.body.addEventListener('click', (e) => {
-      if (
-        e.target.matches('#audio-toggle') ||
-        e.target.closest('#audio-toggle')
-      ) {
-        if (bgm.paused) {
-          bgm.play().catch((error) => {
-            console.log('Audio playback error:', error)
-          })
-          audioToggle.classList.remove('muted')
-        } else {
-          bgm.pause()
-          audioToggle.classList.add('muted')
-        }
+    document.body.addEventListener(
+      'click',
+      (e) => {
+        // Ensure the click isn't on the audio button itself
+        if (e.target.closest('#audio-toggle')) return
+
+        // Attempt to play the audio
+        bgm.play().catch((error) => {
+          console.log('Autoplay prevented:', error)
+        })
+
+        // Remove the click listener after the first click
+        document.body.removeEventListener('click', arguments.callee)
+      },
+      { once: true }
+    )
+
+    // Toggle mute/unmute when the audio button is clicked
+    audioToggle.addEventListener('click', () => {
+      if (bgm.muted) {
+        bgm.muted = false
+        audioToggle.classList.remove('muted')
+        bgm.play().catch(console.error)
+      } else {
+        bgm.muted = true
+        audioToggle.classList.add('muted')
       }
     })
   }
 
-  // Initialize components
   const initializeComponents = () => {
-    // Set up all observers and listeners first
+    // Initialize all components after DOM is fully loaded and parsed
+
+    // Setup lazy loading for images
     setupLazyLoading()
+
+    // Setup animation observer
     setupAnimationObserver()
+
+    // Setup music control
     setupMusicControl()
-
-    // Remove loading screen handling - it's now managed by LoadingAnimation.astro
   }
 
-  // Initialize when document is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeComponents)
-  } else {
-    initializeComponents()
-  }
+  // Initialize all components
+  initializeComponents()
 })

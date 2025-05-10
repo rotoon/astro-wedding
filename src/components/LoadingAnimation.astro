@@ -25,12 +25,12 @@
     font-size: 0.7rem;
     color: var(--text-muted);
     letter-spacing: 0.1em;
-    display: none;
+    display: block;
   }
 </style>
 
 <script is:inline>
-  // Simple loading animation handler
+  // Improved loading animation handler
   document.addEventListener('DOMContentLoaded', function () {
     // Set up elements
     const progressElement = document.getElementById('loading-progress')
@@ -38,50 +38,57 @@
     const loadingScreen = document.querySelector('.loading-screen')
     const mainContainer = document.querySelector('.main-container')
 
-    // Show progress display after 3 seconds if still loading
-    setTimeout(function () {
-      if (
-        progressElement &&
-        loadingScreen &&
-        !loadingScreen.classList.contains('hidden')
-      ) {
-        progressElement.style.display = 'block'
-      }
-    }, 3000)
-
-    // Track progress animation
+    // Start with consistent progress updates
     let progress = 0
-    const progressInterval = setInterval(function () {
+    let progressComplete = false
+
+    // Use more reliable animation frames for smoother progress
+    function updateProgress() {
+      if (progressComplete) return
+
+      // Smoother progress increment
       if (progress < 95) {
-        progress += Math.random() * 5
+        progress += 1 + Math.random() * 2
         progress = Math.min(progress, 95)
 
         if (percentElement) {
           percentElement.textContent = Math.round(progress) + '%'
         }
+
+        // Continue updates using requestAnimationFrame for smoother animation
+        requestAnimationFrame(() => {
+          setTimeout(updateProgress, 120)
+        })
       }
-    }, 300)
+    }
+
+    // Start progress animation
+    updateProgress()
 
     // Function to hide loading screen and show content
     function hideLoadingScreen() {
-      clearInterval(progressInterval)
+      progressComplete = true
 
       if (percentElement) {
         percentElement.textContent = '100%'
       }
 
-      if (loadingScreen) {
+      // Ensure the loading screen has the hidden class
+      if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+        console.log('Hiding loading screen after completion')
         loadingScreen.classList.add('hidden')
       }
 
+      // Add a fallback timer to ensure main container becomes visible
       setTimeout(function () {
-        if (mainContainer) {
+        if (mainContainer && !mainContainer.classList.contains('visible')) {
+          console.log('Making main container visible')
           mainContainer.classList.add('visible')
         }
-      }, 400)
+      }, 800)
     }
 
-    // Force hide loading screen after max wait time
+    // Force hide loading screen after max wait time (failsafe)
     setTimeout(function () {
       if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
         console.log('Force hiding loading screen after timeout')
@@ -89,12 +96,22 @@
       }
     }, 8000)
 
-    // Process proper load event
+    // Process proper load event with a slightly longer delay for smoother transition
     window.addEventListener('load', function () {
       setTimeout(function () {
         console.log('Window loaded, hiding loading screen')
         hideLoadingScreen()
-      }, 2000)
+      }, 2000) // Increased from 1000 to 2000ms for smoother transition
     })
+
+    // Extra failsafe to ensure everything is visible if stuck in loading
+    setTimeout(function () {
+      if (mainContainer && !mainContainer.classList.contains('visible')) {
+        console.log('Final failsafe - forcing main container visible')
+        document.body.classList.add('loaded')
+        loadingScreen.classList.add('hidden')
+        mainContainer.classList.add('visible')
+      }
+    }, 10000)
   })
 </script>
