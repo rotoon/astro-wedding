@@ -1,0 +1,73 @@
+<div class='parallax-hero'>
+  <div
+    class='parallax-layer hero-bg'
+    data-speed='0.2'
+  >
+  </div>
+  <div
+    class='parallax-layer hero-overlay'
+    data-speed='0.1'
+  >
+  </div>
+  <div class='parallax-content'>
+    <div class='hero-date'>
+      <div class='date-line'><span>25</span></div>
+      <div class='date-line'><span>05</span></div>
+      <div class='date-line'><span>2025</span></div>
+    </div>
+    <div class='hero-title'>
+      <div class='heading-decorative'>It's happening!</div>
+      <h1 class='main-title'>
+        <span class='name-line-1'>Suchanya</span>
+        <span class='name-separator'>&</span>
+        <span class='name-line-2'>Nuttapon</span>
+      </h1>
+      <div class='scroll-indicator'>
+        <span>Explore More</span>
+        <div class='scroll-arrow'>
+          <svg
+            viewBox='0 0 24 24'
+            width='24'
+            height='24'
+            stroke='currentColor'
+            stroke-width='1'
+            fill='none'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+          >
+            <path d='M12 5v14M5 12l7 7 7-7'></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class='hero-ornamental-border'></div>
+</div>
+
+<script>
+  const parallaxElements = document.querySelectorAll('.parallax-layer')
+
+  const updateParallax = throttle(() => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const viewportHeight = window.innerHeight
+
+    if (scrollTop <= viewportHeight) {
+      requestAnimationFrame(() => {
+        parallaxElements.forEach((element) => {
+          const speed = parseFloat(element.getAttribute('data-speed') || '0')
+          const yPos = -(scrollTop * speed)
+          if (element.classList.contains('hero-bg')) {
+            const scale = 1.1 - scrollTop * 0.0002
+            const htmlElement = element as HTMLElement
+            htmlElement.style.transform = `scale(${scale}) translateY(${yPos}px)`
+          } else {
+            const htmlElement = element as HTMLElement
+            htmlElement.style.transform = `translateY(${yPos}px)`
+          }
+        })
+      })
+    }
+  }, 16) // ~60fps
+
+  window.addEventListener('scroll', updateParallax, { passive: true })
+</script>

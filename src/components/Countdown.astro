@@ -1,0 +1,90 @@
+<!-- Countdown Section -->
+<section class='countdown-section'>
+  <div class='countdown-overlay'></div>
+  <div class='countdown-content'>
+    <h2 class='countdown-title'>Countdown to Forever</h2>
+    <div
+      id='countdown'
+      class='countdown-display'
+    >
+      <div class='countdown-unit'>
+        <div
+          class='countdown-value'
+          id='days'
+        >
+          00
+        </div>
+        <div class='countdown-label'>Days</div>
+      </div>
+      <div class='countdown-separator'>:</div>
+      <div class='countdown-unit'>
+        <div
+          class='countdown-value'
+          id='hours'
+        >
+          00
+        </div>
+        <div class='countdown-label'>Hours</div>
+      </div>
+      <div class='countdown-separator'>:</div>
+      <div class='countdown-unit'>
+        <div
+          class='countdown-value'
+          id='minutes'
+        >
+          00
+        </div>
+        <div class='countdown-label'>Mins</div>
+      </div>
+      <div class='countdown-separator'>:</div>
+      <div class='countdown-unit'>
+        <div
+          class='countdown-value'
+          id='seconds'
+        >
+          00
+        </div>
+        <div class='countdown-label'>Secs</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const weddingDate = new Date('May 25, 2025 08:39:00').getTime()
+  const countdownElements = {
+    days: getElement('#days'),
+    hours: getElement('#hours'),
+    minutes: getElement('#minutes'),
+    seconds: getElement('#seconds'),
+  }
+
+  const updateCountdown = () => {
+    const now = new Date().getTime()
+    const distance = weddingDate - now
+
+    if (distance < 0) {
+      clearInterval(countdownTimer)
+      getElement('#countdown').innerHTML =
+        "<div class='countdown-message'>The wedding is happening now!</div>"
+      return
+    }
+
+    requestAnimationFrame(() => {
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24))
+      const hours = Math.floor(
+        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      )
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000)
+
+      countdownElements.days.innerHTML = String(days).padStart(2, '0')
+      countdownElements.hours.innerHTML = String(hours).padStart(2, '0')
+      countdownElements.minutes.innerHTML = String(minutes).padStart(2, '0')
+      countdownElements.seconds.innerHTML = String(seconds).padStart(2, '0')
+    })
+  }
+
+  updateCountdown()
+  const countdownTimer = setInterval(updateCountdown, 1000)
+</script>

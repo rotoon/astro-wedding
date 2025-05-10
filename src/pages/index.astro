@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/Layout.astro'
+import LoadingAnimation from '../components/LoadingAnimation.astro'
+import HeroSection from '../components/HeroSection.astro'
+import MusicPlayer from '../components/MusicPlayer.astro'
+import Bio from '../components/Bio.astro'
+import PhotoGallery from '../components/PhotoGallery.astro'
+import PhotoMosaic from '../components/PhotoMosaic.astro'
+import Countdown from '../components/Countdown.astro'
+import WeddingDetails from '../components/WeddingDetails.astro'
+import Map from '../components/Map.astro'
+import Footer from '../components/Footer.astro'
+---
+
+<Layout>
+  <LoadingAnimation />
+  <MusicPlayer />
+  <div class='main-container'>
+    <HeroSection />
+    <div class='invitation-content'>
+      <Bio />
+      <PhotoGallery />
+      <PhotoMosaic />
+      <Countdown />
+      <WeddingDetails />
+      <Map />
+      <Footer />
+    </div>
+  </div>
+</Layout>

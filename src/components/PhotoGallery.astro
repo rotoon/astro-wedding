@@ -1,0 +1,246 @@
+---
+// Array of available images for the gallery
+const galleryImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
+---
+
+<!-- Photo Gallery -->
+<section class='gallery-section'>
+  <div class='gallery-title-container'>
+    <div class='gallery-ornament left'></div>
+    <h2 class='section-title gallery-title reveal-title'>Our Love Story</h2>
+    <div class='gallery-ornament right'></div>
+  </div>
+
+  <div class='swiper-container'>
+    <div class='swiper-wrapper'>
+      {
+        galleryImages.map((num) => (
+          <div class='swiper-slide'>
+            <div
+              class='gallery-image'
+              data-background={`img/sweet/${num}.jpg`}
+            />
+          </div>
+        ))
+      }
+    </div>
+    <div class='swiper-pagination'></div>
+  </div>
+  <div class='gallery-controls'>
+    <div class='swiper-button-prev'></div>
+    <div class='swiper-button-next'></div>
+  </div>
+</section>
+
+<script>
+  // Adding TypeScript declarations for Swiper
+  declare const Swiper: any
+
+  interface SwiperOptions {
+    effect: string
+    grabCursor: boolean
+    centeredSlides: boolean
+    slidesPerView: string | number
+    initialSlide: number
+    coverflowEffect: {
+      rotate: number
+      stretch: number
+      depth: number
+      modifier: number
+      slideShadows: boolean
+    }
+    pagination: {
+      el: string
+      clickable: boolean
+    }
+    navigation: {
+      nextEl: string
+      prevEl: string
+    }
+    breakpoints: {
+      [key: number]: {
+        slidesPerView: string | number
+        spaceBetween: number
+      }
+    }
+    preloadImages: boolean
+    lazy: {
+      loadPrevNext: boolean
+      loadPrevNextAmount: number
+      loadOnTransitionStart: boolean
+      elementClass: string
+      loadingClass: string
+      loadedClass: string
+      preloaderClass: string
+    }
+    watchSlidesProgress: boolean
+  }
+
+  const swiperOptions: SwiperOptions = {
+    effect: 'coverflow',
+    grabCursor: true,
+    centeredSlides: true,
+    slidesPerView: 'auto',
+    initialSlide: 1,
+    coverflowEffect: {
+      rotate: 5,
+      stretch: 0,
+      depth: 100,
+      modifier: 1,
+      slideShadows: false,
+    },
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+    breakpoints: {
+      320: {
+        slidesPerView: 1,
+        spaceBetween: 20,
+      },
+      768: {
+        slidesPerView: 'auto',
+        spaceBetween: 30,
+      },
+    },
+    preloadImages: false,
+    lazy: {
+      loadPrevNext: true,
+      loadPrevNextAmount: 2,
+      loadOnTransitionStart: true,
+      elementClass: 'gallery-image',
+      loadingClass: 'swiper-lazy-loading',
+      loadedClass: 'swiper-lazy-loaded',
+      preloaderClass: 'swiper-lazy-preloader',
+    },
+    watchSlidesProgress: true,
+  }
+
+  // Initialize swiper with performance optimizations
+  const initializeSwiper = () => {
+    try {
+      if (typeof Swiper === 'undefined') {
+        console.warn('Swiper library not loaded yet. Waiting...')
+        setTimeout(initializeSwiper, 500)
+        return
+      }
+
+      // Add lazy loading functionality
+      const galleryImages = document.querySelectorAll(
+        '.gallery-image[data-background]'
+      )
+      galleryImages.forEach((image) => {
+        const backgroundUrl = (image as HTMLElement).dataset.background
+        if (backgroundUrl) {
+          ;(image as HTMLElement).setAttribute('data-background', backgroundUrl)
+        }
+      })
+
+      // Initialize Swiper
+      const swiper = new Swiper('.swiper-container', swiperOptions)
+
+      // Optimize navigation interactions
+      const next = document.querySelector('.swiper-button-next')
+      const prev = document.querySelector('.swiper-button-prev')
+
+      if (next) {
+        next.addEventListener('click', () => {
+          // Preload next slide images
+          setTimeout(() => {
+            const activeIndex = swiper.activeIndex
+            if (activeIndex < swiper.slides.length - 2) {
+              const nextSlide = swiper.slides[activeIndex + 2]
+              const image = nextSlide?.querySelector('.gallery-image')
+              if (
+                image &&
+                image.dataset.background &&
+                !image.style.backgroundImage
+              ) {
+                image.style.backgroundImage = `url(${image.dataset.background})`
+              }
+            }
+          }, 100)
+        })
+      }
+
+      if (prev) {
+        prev.addEventListener('click', () => {
+          // Preload previous slide images
+          setTimeout(() => {
+            const activeIndex = swiper.activeIndex
+            if (activeIndex > 1) {
+              const prevSlide = swiper.slides[activeIndex - 2]
+              const image = prevSlide?.querySelector('.gallery-image')
+              if (
+                image &&
+                image.dataset.background &&
+                !image.style.backgroundImage
+              ) {
+                image.style.backgroundImage = `url(${image.dataset.background})`
+              }
+            }
+          }, 100)
+        })
+      }
+
+      // Initialize first few slides
+      const preloadCount = Math.min(3, swiper.slides.length)
+      for (let i = 0; i < preloadCount; i++) {
+        const slide = swiper.slides[i]
+        const image = slide?.querySelector('.gallery-image')
+        if (image && image.dataset.background) {
+          image.style.backgroundImage = `url(${image.dataset.background})`
+        }
+      }
+
+      // Optimize transition performance
+      swiper.on('slideChangeTransitionStart', function () {
+        const activeIndex = swiper.activeIndex
+        const slides = swiper.slides
+
+        // Load the current, previous and next slides
+        const loadIndices = [
+          activeIndex,
+          Math.max(0, activeIndex - 1),
+          Math.min(slides.length - 1, activeIndex + 1),
+        ]
+
+        loadIndices.forEach((index) => {
+          const image = slides[index]?.querySelector('.gallery-image')
+          if (
+            image &&
+            image.dataset.background &&
+            !image.style.backgroundImage
+          ) {
+            requestAnimationFrame(() => {
+              image.style.backgroundImage = `url(${image.dataset.background})`
+            })
+          }
+        })
+      })
+    } catch (error) {
+      console.error('Error initializing Swiper:', error)
+      console.error('Make sure to include the Swiper library.')
+    }
+  }
+
+  // Use requestIdleCallback or setTimeout for better performance
+  const initWhenIdle = () => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => initializeSwiper(), { timeout: 2000 })
+    } else {
+      setTimeout(initializeSwiper, 1000)
+    }
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWhenIdle)
+  } else {
+    initWhenIdle()
+  }
+</script>

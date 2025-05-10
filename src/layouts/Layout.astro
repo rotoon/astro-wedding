@@ -1,0 +1,122 @@
+---
+import '../styles/global.css'
+---
+
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta
+      name='viewport'
+      content='width=device-width'
+    />
+    <link
+      rel='icon'
+      type='image/svg+xml'
+      href='/favicon.svg'
+    />
+    <meta
+      name='generator'
+      content={Astro.generator}
+    />
+    <title>SOM & TOON Wedding</title>
+
+    <!-- Resource hints for better performance -->
+    <link
+      rel='preconnect'
+      href='https://fonts.googleapis.com'
+    />
+    <link
+      rel='preconnect'
+      href='https://fonts.gstatic.com'
+      crossorigin
+    />
+    <link
+      rel='preconnect'
+      href='https://cdnjs.cloudflare.com'
+    />
+    <link
+      rel='preconnect'
+      href='https://unpkg.com'
+    />
+
+    <!-- Critical CSS for faster rendering -->
+    <style is:inline>
+      /* Critical styles to avoid layout shifts */
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        font-family: 'Montserrat', sans-serif;
+      }
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f6f1ed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      .main-container {
+        opacity: 0;
+      }
+      .main-container.visible {
+        opacity: 1;
+      }
+    </style>
+
+    <!-- Optimized font loading - display=swap ensures text remains visible during font loading -->
+    <link
+      href='https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600&family=Cinzel:wght@400;500&family=Montserrat:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap'
+      rel='stylesheet'
+      media='print'
+      onload="this.media='all'"
+    />
+    <!-- Font fallback in case the above doesn't load -->
+    <noscript>
+      <link
+        href='https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600&family=Cinzel:wght@400;500&family=Montserrat:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap'
+        rel='stylesheet'
+      />
+    </noscript>
+
+    <!-- Optimized CSS loading -->
+    <link
+      rel='stylesheet'
+      href='https://unpkg.com/swiper/swiper-bundle.min.css'
+      media='print'
+      onload="this.media='all'"
+    />
+
+    <!-- Load utility script first to make functions globally available -->
+    <script
+      is:inline
+      src='/src/utils/script.js'
+    ></script>
+
+    <!-- Consolidated GSAP scripts -->
+    <script
+      is:inline
+      defer
+      src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js'
+    ></script>
+    <script
+      is:inline
+      defer
+      src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js'
+    ></script>
+    <!-- Swiper.js for sliders -->
+    <script
+      is:inline
+      defer
+      src='https://unpkg.com/swiper/swiper-bundle.min.js'
+    ></script>
+  </head>
+  <body>
+    <div class='noise-overlay'></div>
+    <slot />
+  </body>
+</html>
