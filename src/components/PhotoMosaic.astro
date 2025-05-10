@@ -1,6 +1,17 @@
 ---
 // Array of available images for the mosaic
-const mosaicImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
+import fs from 'node:fs'
+import path from 'node:path'
+
+// Read all image files from the slide folder
+const slideDir = path.join(process.cwd(), 'public/img/sweet')
+const mosaicImages = fs.readdirSync(slideDir).sort((a, b) => {
+  // Extract numbers from filenames
+  const numA = parseInt(a.match(/\d+/)?.[0] || '0', 10)
+  const numB = parseInt(b.match(/\d+/)?.[0] || '0', 10)
+  // Sort by number
+  return numA - numB
+})
 ---
 
 <!-- Photo Mosaic -->
@@ -9,14 +20,13 @@ const mosaicImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
   <h2 class='section-title reveal-title'>Sweet Moments</h2>
   <div class='photo-mosaic'>
     {
-      mosaicImages.map((num) => {
-        if (num < 8) return null
-        const imagePath = `/img/sweet/${num}.jpg`
+      mosaicImages.map((filename) => {
+        const imagePath = `/img/sweet/${filename}`
         return (
           <div
-            class={`mosaic-item item${num}`}
-            data-caption={`Photo ${num}`}
-            data-image-number={num}
+            class={`mosaic-item item${filename}`}
+            data-caption={`Photo ${filename}`}
+            data-image-number={filename}
             data-image-path={imagePath}
           >
             <div
@@ -337,7 +347,7 @@ const mosaicImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
         // Extract image number from data-image-number or class or data-caption
         const imageNumber = item.getAttribute('data-image-number')
         if (imageNumber) {
-          const directUrl = `/img/sweet/${imageNumber}.jpg`
+          const directUrl = `/img/sweet/${imageNumber}.webp`
           console.log('URL constructed from data-image-number:', directUrl)
           urlCache.set(item, directUrl)
           return directUrl
@@ -348,7 +358,7 @@ const mosaicImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
         const match = caption.match(/Photo (\d+)/)
         if (match && match[1]) {
           const imgNumber = match[1]
-          const directUrl = `/img/sweet/${imgNumber}.jpg`
+          const directUrl = `/img/sweet/${imgNumber}.webp`
           console.log('URL constructed from caption:', directUrl)
           urlCache.set(item, directUrl)
           return directUrl
@@ -411,7 +421,7 @@ const mosaicImages: number[] = Array.from({ length: 23 }, (_, i) => i + 1)
           // Try with a clean path as fallback
           const imageNumber = item.getAttribute('data-image-number')
           if (imageNumber) {
-            const fallbackUrl = `/img/sweet/${imageNumber}.jpg`
+            const fallbackUrl = `/img/sweet/${imageNumber}.webp`
             console.log('Trying fallback URL:', fallbackUrl)
             if (fallbackUrl !== imageUrl) {
               modalImage.src = fallbackUrl

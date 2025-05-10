@@ -64,7 +64,7 @@ export default defineConfig({
     ],
 
     // Optimize asset loading
-    assetsInclude: ['**/*.jpg', '**/*.png', '**/*.svg'],
+    assetsInclude: ['**/*.jpg', '**/*.png', '**/*.svg', '**/*.webp'],
 
     // Set environment variables
     define: {
