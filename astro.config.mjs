@@ -69,7 +69,7 @@ export default defineConfig({
     // Set environment variables
     define: {
       'import.meta.env.PUBLIC_SITE_URL': JSON.stringify(
-        'https://wedding.example.com'
+        'https://www.ststarttogether.com/'
       ),
     },
   },
