@@ -219,7 +219,7 @@
     height: 100%;
     width: 0;
     background-color: var(--primary-color);
-    animation: loadingProgress 2.5s ease forwards;
+    animation: loadingProgress 1.5s ease forwards;
     transform: var(--transform-gpu);
     will-change: width;
     contain: layout style paint;
@@ -1011,7 +1011,7 @@
   }
   
   .gallery-image {
-    height: 350px;
+    height: 650px ;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -1960,7 +1960,7 @@
     }
   
     .gallery-image {
-      height: 350px;
+      height: 500px;
     }
   
     .elegant-text {
