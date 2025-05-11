@@ -1,164 +1,320 @@
 ---
-// Array of available images for the mosaic
 import fs from 'node:fs'
 import path from 'node:path'
 
-// Read all image files from the slide folder
-const slideDir = path.join(process.cwd(), 'public/img/sweet')
-const mosaicImages = fs.readdirSync(slideDir).sort((a, b) => {
-  // Extract numbers from filenames
-  const numA = parseInt(a.match(/\d+/)?.[0] || '0', 10)
-  const numB = parseInt(b.match(/\d+/)?.[0] || '0', 10)
-  // Sort by number
-  return numA - numB
-})
+// Types
+interface MosaicImage {
+  filename: string
+  path: string
+  caption: string
+}
+
+// Constants
+const ANIMATION_CONFIG = {
+  DELAY: 100,
+  THRESHOLD: 0.1,
+  ROOT_MARGIN: '10px 0px',
+  TRANSITION_TIMING: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  TRANSITION_DURATION: '0.6s',
+} as const
+
+// Utils
+const getMosaicImages = (): MosaicImage[] => {
+  const slideDir = path.join(process.cwd(), 'public/img/sweet')
+  const files = fs.readdirSync(slideDir).sort((a: string, b: string) => {
+    const numA = parseInt(a.match(/\d+/)?.[0] || '0', 10)
+    const numB = parseInt(b.match(/\d+/)?.[0] || '0', 10)
+    return numA - numB
+  })
+
+  return files.map((filename: string) => ({
+    filename,
+    path: `/img/sweet/${filename}`,
+    caption: `Photo ${filename}`,
+  }))
+}
+
+const mosaicImages = getMosaicImages()
+
+// Generate preload links for critical images (first few visible images)
+const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 ---
 
 <!-- Photo Mosaic -->
 <section class='photo-mosaic-section'>
+  {/* Preload critical images */}
+  {
+    criticalImages.map((image) => (
+      <link
+        rel='preload'
+        as='image'
+        href={image.path}
+        fetchpriority='high'
+      />
+    ))
+  }
+
   <div class='section-decorative-line'></div>
   <h2 class='section-title reveal-title'>Sweet Moments</h2>
   <div class='photo-mosaic'>
     {
-      mosaicImages.map((filename) => {
-        const imagePath = `/img/sweet/${filename}`
-        return (
+      mosaicImages.map((image) => (
+        <div
+          class={`mosaic-item item${image.filename}`}
+          data-caption={image.caption}
+          data-image-number={image.filename}
+          data-image-path={image.path}
+        >
           <div
-            class={`mosaic-item item${filename}`}
-            data-caption={`Photo ${filename}`}
-            data-image-number={filename}
-            data-image-path={imagePath}
-          >
-            <div
-              class='mosaic-image'
-              data-src={imagePath}
-              style={`background-color: #eee;`}
-            />
-          </div>
-        )
-      })
+            class='mosaic-image'
+            data-src={image.path}
+            style='background-color: #eee;'
+          />
+        </div>
+      ))
     }
   </div>
 </section>
 
-<script>
-  // Create image cache to avoid redundant loads
-  const imageCache = new Map<string, HTMLImageElement>()
-
-  // IntersectionObserver options
-  const observerOptions = {
-    rootMargin: '100px', // Load images earlier
-    threshold: 0.01, // Trigger with minimal visibility
+<style
+  define:vars={{
+    transitionTiming: ANIMATION_CONFIG.TRANSITION_TIMING,
+    transitionDuration: ANIMATION_CONFIG.TRANSITION_DURATION,
+  }}
+>
+  .mosaic-item {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+    transition:
+      opacity var(--transitionDuration) var(--transitionTiming),
+      transform var(--transitionDuration) var(--transitionTiming);
+    will-change: opacity, transform;
   }
 
-  // Single observer for all lazy-loaded images
-  const setupLazyLoading = () => {
-    const mosaicImages = document.querySelectorAll<HTMLElement>(
+  .mosaic-item.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  .mosaic-image {
+    opacity: 0;
+    transform: scale(0.98);
+    transition:
+      opacity var(--transitionDuration) var(--transitionTiming),
+      transform var(--transitionDuration) var(--transitionTiming);
+    will-change: opacity, transform;
+    background-position: center;
+    background-size: cover;
+  }
+
+  .mosaic-item.visible .mosaic-image {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .mosaic-item.hover {
+    transform: translateY(-5px);
+  }
+</style>
+
+<script>
+  // Types
+  interface AnimationConfig {
+    DELAY: number
+    THRESHOLD: number
+    ROOT_MARGIN: string
+  }
+
+  interface CacheConfig {
+    CACHE_NAME: string
+    CACHE_VERSION: string
+    MAX_CACHED_IMAGES: number
+  }
+
+  // Constants
+  const ANIMATION_CONFIG: AnimationConfig = {
+    DELAY: 100,
+    THRESHOLD: 0.1,
+    ROOT_MARGIN: '10px 0px',
+  }
+
+  const CACHE_CONFIG: CacheConfig = {
+    CACHE_NAME: 'mosaic-images',
+    CACHE_VERSION: 'v1',
+    MAX_CACHED_IMAGES: 50, // Maximum number of images to cache
+  }
+
+  // Cache Management
+  const initializeCache = async (): Promise<void> => {
+    if (!('caches' in window)) return
+
+    const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
+    const cache = await caches.open(cacheName)
+
+    // Preload and cache visible images
+    const visibleImages = document.querySelectorAll<HTMLElement>(
+      '.mosaic-image[data-src]'
+    )
+    const imagesToCache = Array.from(visibleImages)
+      .slice(0, CACHE_CONFIG.MAX_CACHED_IMAGES)
+      .map((img) => img.dataset.src)
+      .filter((src): src is string => !!src)
+
+    await Promise.all(
+      imagesToCache.map(async (src) => {
+        try {
+          const response = await fetch(src)
+          if (response.ok) {
+            await cache.put(src, response)
+          }
+        } catch (error) {
+          console.warn('Failed to cache image:', src, error)
+        }
+      })
+    )
+  }
+
+  // Image Loading with Cache
+  const loadImage = async (image: HTMLElement): Promise<void> => {
+    const src = image.dataset.src
+    if (!src) return
+
+    try {
+      // Try to get from cache first
+      if ('caches' in window) {
+        const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
+        const cache = await caches.open(cacheName)
+        const cachedResponse = await cache.match(src)
+
+        if (cachedResponse) {
+          const blob = await cachedResponse.blob()
+          const objectUrl = URL.createObjectURL(blob)
+          image.style.backgroundImage = `url(${objectUrl})`
+          delete image.dataset.src
+          return
+        }
+      }
+
+      // If not in cache or caching not supported, load normally
+      image.style.backgroundImage = `url(${src})`
+      delete image.dataset.src
+
+      // Cache the image for future use
+      if ('caches' in window) {
+        const response = await fetch(src)
+        if (response.ok) {
+          const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
+          const cache = await caches.open(cacheName)
+          await cache.put(src, response.clone())
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load image:', src, error)
+      image.style.backgroundImage = `url(${src})` // Fallback to direct loading
+      delete image.dataset.src
+    }
+  }
+
+  // Lazy Loading with Cache
+  const setupLazyLoading = (): void => {
+    const images = document.querySelectorAll<HTMLElement>(
       '.mosaic-image[data-src]'
     )
 
-    if ('IntersectionObserver' in window) {
-      const imageObserver = new IntersectionObserver((entries, observer) => {
+    if (!('IntersectionObserver' in window)) {
+      images.forEach(loadImage)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return
 
           const image = entry.target as HTMLElement
-          const src = image.dataset.src
-
-          if (src) {
-            // Apply the background image
-            image.style.backgroundImage = `url(${src})`
-
-            // Remove data-src to mark as loaded
-            delete image.dataset.src
-
-            // Stop observing this element
-            observer.unobserve(image)
-          }
+          loadImage(image)
+          observer.unobserve(image)
         })
-      }, observerOptions)
+      },
+      {
+        rootMargin: '50px',
+        threshold: 0.01,
+      }
+    )
 
-      // Observe all images with data-src
-      mosaicImages.forEach((image) => {
-        imageObserver.observe(image)
-      })
-    } else {
-      // Fallback for browsers without IntersectionObserver
-      mosaicImages.forEach((image) => {
-        const src = image.dataset.src
-        if (src) {
-          image.style.backgroundImage = `url(${src})`
-          delete image.dataset.src
-        }
-      })
-    }
+    images.forEach((image) => observer.observe(image))
   }
 
-  // Animation observer - handles reveal animations
-  const setupAnimationObserver = () => {
-    const mosaicItems = document.querySelectorAll<HTMLElement>('.mosaic-item')
+  // Animation Setup
+  const setupAnimations = (): void => {
+    const items = document.querySelectorAll<HTMLElement>('.mosaic-item')
 
-    if ('IntersectionObserver' in window) {
-      const animationObserver = new IntersectionObserver(
-        (entries, observer) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return
+    if (!('IntersectionObserver' in window)) {
+      items.forEach((item, index) => {
+        setTimeout(
+          () => item.classList.add('visible'),
+          index * ANIMATION_CONFIG.DELAY
+        )
+      })
+      return
+    }
 
-            const item = entry.target as HTMLElement
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
 
-            // Use requestAnimationFrame for smoother animations
-            requestAnimationFrame(() => {
+          const item = entry.target as HTMLElement
+          const items = document.querySelectorAll<HTMLElement>('.mosaic-item')
+          const index = Array.from(items).indexOf(item)
+
+          requestAnimationFrame(() => {
+            setTimeout(() => {
               item.classList.add('visible')
-            })
-
-            observer.unobserve(item)
+              const image = item.querySelector<HTMLElement>('.mosaic-image')
+              if (image?.dataset.src) loadImage(image)
+            }, index * ANIMATION_CONFIG.DELAY)
           })
-        },
-        observerOptions
-      )
 
-      // Observe all mosaic items
-      mosaicItems.forEach((item) => {
-        animationObserver.observe(item)
-      })
-    } else {
-      // Fallback for browsers without IntersectionObserver
-      mosaicItems.forEach((item) => {
-        item.classList.add('visible')
-      })
-    }
+          observer.unobserve(item)
+        })
+      },
+      {
+        threshold: ANIMATION_CONFIG.THRESHOLD,
+        rootMargin: ANIMATION_CONFIG.ROOT_MARGIN,
+      }
+    )
+
+    items.forEach((item) => observer.observe(item))
   }
 
-  // Hover effect with performance optimization
-  const setupHoverEffects = () => {
-    const mosaicItems = document.querySelectorAll<HTMLElement>('.mosaic-item')
-    let activeHoverItem: HTMLElement | null = null
+  // Hover Effects
+  const setupHoverEffects = (): void => {
+    let activeItem: HTMLElement | null = null
+    const mosaic = document.querySelector('.photo-mosaic')
 
-    // Using event delegation for better performance
-    document
-      .querySelector('.photo-mosaic')
-      ?.addEventListener('mouseover', (e) => {
-        const target = e.target as HTMLElement
-        const item = target.closest('.mosaic-item') as HTMLElement
+    if (!mosaic) return
 
-        if (item && activeHoverItem !== item) {
-          if (activeHoverItem) {
-            activeHoverItem.classList.remove('hover')
-          }
+    const handleMouseOver = (e: Event): void => {
+      const target = e.target as HTMLElement
+      const item = target.closest('.mosaic-item') as HTMLElement
 
-          item.classList.add('hover')
-          activeHoverItem = item
-        }
-      })
+      if (item && activeItem !== item) {
+        activeItem?.classList.remove('hover')
+        item.classList.add('hover')
+        activeItem = item
+      }
+    }
 
-    document
-      .querySelector('.photo-mosaic')
-      ?.addEventListener('mouseleave', () => {
-        if (activeHoverItem) {
-          activeHoverItem.classList.remove('hover')
-          activeHoverItem = null
-        }
-      })
+    const handleMouseLeave = (): void => {
+      if (activeItem) {
+        activeItem.classList.remove('hover')
+        activeItem = null
+      }
+    }
+
+    mosaic.addEventListener('mouseover', handleMouseOver)
+    mosaic.addEventListener('mouseleave', handleMouseLeave)
   }
 
   // Image modal setup function - moved outside of the setupImageModal function
@@ -577,16 +733,13 @@ const mosaicImages = fs.readdirSync(slideDir).sort((a, b) => {
 
   // Initialize everything when DOM is ready
   document.addEventListener('DOMContentLoaded', () => {
-    // Setup lazy loading
+    // Initialize cache first
+    initializeCache().catch(console.warn)
+
+    // Then setup other features
     setupLazyLoading()
-
-    // Setup animation observer
-    setupAnimationObserver()
-
-    // Setup hover effects
+    setupAnimations()
     setupHoverEffects()
-
-    // Initialize image modal
     setupImageModal()
   })
 </script>
