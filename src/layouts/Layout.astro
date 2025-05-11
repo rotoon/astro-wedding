@@ -1,24 +1,172 @@
 ---
 import '../styles/global.css'
+
+interface Props {
+  title?: string
+  description?: string
+  image?: string
+  canonicalURL?: string
+}
+
+const {
+  title = 'SOM & TOON Wedding Invitation | May 25, 2025',
+  description = 'Join us for the wedding celebration of Suchanya (Som) & Nuttapon (Toon) on May 25, 2025, at Virgin Ville Sanpatong, Chiangmai, Thailand. An elegant celebration of our love.',
+  image = '/img/og-cover.webp',
+  canonicalURL = Astro.url.href,
+} = Astro.props
+
+// Wedding details for structured data
+const weddingDate = '2025-05-25T08:39:00+07:00'
+const weddingLocation =
+  'Wedding Venues at Virgin Ville Sanpatong Chiangmai, 194/5 หมู่6 ตำบล ยุหว่า อำเภอสันป่าตอง เชียงใหม่ 50120 ไทย'
+const coupleNames = 'Suchanya & Nuttapon'
 ---
 
-<html lang='en'>
+<!doctype html>
+<html lang='th'>
   <head>
     <meta charset='UTF-8' />
     <meta
       name='viewport'
-      content='width=device-width'
+      content='width=device-width, initial-scale=1.0'
     />
     <link
       rel='icon'
       type='image/svg+xml'
       href='/favicon.ico'
     />
+
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
     <meta
-      name='generator'
-      content={Astro.generator}
+      name='title'
+      content={title}
     />
-    <title>SOM & TOON Wedding</title>
+    <meta
+      name='description'
+      content={description}
+    />
+    <meta
+      name='keywords'
+      content='wedding, wedding invitation, สุชัญญา, ณัฐพล, wedding chiangmai, virgin ville, sanpatong'
+    />
+    <meta
+      name='author'
+      content={coupleNames}
+    />
+    <link
+      rel='canonical'
+      href={canonicalURL}
+    />
+
+    <!-- Open Graph / Facebook -->
+    <meta
+      property='og:type'
+      content='website'
+    />
+    <meta
+      property='og:url'
+      content={canonicalURL}
+    />
+    <meta
+      property='og:title'
+      content={title}
+    />
+    <meta
+      property='og:description'
+      content={description}
+    />
+    <meta
+      property='og:image'
+      content={new URL(image, Astro.url.origin).href}
+    />
+    <meta
+      property='og:locale'
+      content='th_TH'
+    />
+
+    <!-- Twitter -->
+    <meta
+      property='twitter:card'
+      content='summary_large_image'
+    />
+    <meta
+      property='twitter:url'
+      content={canonicalURL}
+    />
+    <meta
+      property='twitter:title'
+      content={title}
+    />
+    <meta
+      property='twitter:description'
+      content={description}
+    />
+    <meta
+      property='twitter:image'
+      content={new URL(image, Astro.url.origin).href}
+    />
+
+    <!-- Mobile optimization -->
+    <meta
+      name='theme-color'
+      content='#7b5c43'
+    />
+    <meta
+      name='mobile-web-app-capable'
+      content='yes'
+    />
+    <meta
+      name='apple-mobile-web-app-capable'
+      content='yes'
+    />
+    <meta
+      name='apple-mobile-web-app-status-bar-style'
+      content='default'
+    />
+    <meta
+      name='format-detection'
+      content='telephone=no'
+    />
+
+    <!-- PWA manifest -->
+    <link
+      rel='manifest'
+      href='/manifest.json'
+    />
+
+    <!-- Event Structured Data for SEO -->
+    <script type='application/ld+json'>
+      {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": "Wedding of Suchanya & Nuttapon",
+        "startDate": "${weddingDate}",
+        "endDate": "2025-05-25T15:00:00+07:00",
+        "location": {
+          "@type": "Place",
+          "name": "Wedding Venues at Virgin Ville Sanpatong Chiangmai",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "194/5 หมู่6 ตำบล ยุหว่า",
+            "addressLocality": "อำเภอสันป่าตอง",
+            "addressRegion": "เชียงใหม่",
+            "postalCode": "50120",
+            "addressCountry": "TH"
+          }
+        },
+        "image": [
+          "${new URL('/img/og-cover.webp', Astro.url.origin).href}",
+          "${new URL('/img/hero.webp', Astro.url.origin).href}",
+          "${new URL('/img/bride.webp', Astro.url.origin).href}"
+        ],
+        "description": "Join us for our wedding celebration. An elegant celebration of our love.",
+        "organizer": {
+          "@type": "Person",
+          "name": "Suchanya & Nuttapon"
+        }
+      }
+    </script>
 
     <!-- Resource hints for better performance -->
     <link
