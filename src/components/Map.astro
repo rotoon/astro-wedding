@@ -8,9 +8,35 @@
         <div class='map-info'>
           <h3>Wedding Venues at Virgin Ville Sanpatong Chiangmai</h3>
           <p>194/5 หมู่6 ตำบล ยุหว่า อำเภอสันป่าตอง เชียงใหม่ 50120 ไทย</p>
-          <button class='map-nav-btn'>Get Directions</button>
+          <button
+            id='directionsBtn'
+            class='map-nav-btn'
+            >Get Directions</button
+          >
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<script>
+  // Wait for the DOM to be fully loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    const directionsBtn = document.getElementById('directionsBtn')
+
+    if (directionsBtn) {
+      directionsBtn.addEventListener('click', () => {
+        // Updated coordinates from Google Maps embed
+        const latitude = 18.6097137
+        const longitude = 98.8788303
+        const venueName = 'Wedding Venues at Virgin Ville Sanpatong Chiangmai'
+
+        // Create Google Maps URL with directions
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving&destination_place_id=${encodeURIComponent(venueName)}`
+
+        // Open in new tab
+        window.open(mapsUrl, '_blank')
+      })
+    }
+  })
+</script>
