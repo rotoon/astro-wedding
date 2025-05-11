@@ -207,35 +207,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Setup background music control
   const setupMusicControl = () => {
-    const bgm = getElement('#bgm')
+    // ดึง element จากทั้งสอง id (ทั้งจาก HTML tag และจาก JavaScript สร้าง)
+    const bgmTag = getElement('#bgm')
+    const bgmJS = getElement('#bgm-js')
+    const bgm = bgmJS || bgmTag // ใช้ JS audio element ก่อนถ้ามี
     const audioToggle = getElement('#audio-toggle')
 
     if (!bgm || !audioToggle) return
 
-    document.body.addEventListener(
-      'click',
-      (e) => {
-        // Ensure the click isn't on the audio button itself
-        if (e.target.closest('#audio-toggle')) return
-
-        // Attempt to play the audio
-        bgm.play().catch((error) => {
-          console.log('Autoplay prevented:', error)
-        })
-
-        // Remove the click listener after the first click
-        document.body.removeEventListener('click', arguments.callee)
-      },
-      { once: true }
-    )
-
     // Toggle mute/unmute when the audio button is clicked
     audioToggle.addEventListener('click', () => {
-      if (bgm.muted) {
+      if (!bgm) return
+
+      // ถ้าเป็น muted หรือหยุดเล่น ให้เริ่มเล่น
+      if (bgm.muted || bgm.paused) {
         bgm.muted = false
         audioToggle.classList.remove('muted')
-        bgm.play().catch(console.error)
+
+        try {
+          bgm.play()
+        } catch (err) {
+          // เงียบการรายงานข้อผิดพลาด
+        }
       } else {
+        // ถ้าไม่ใช่ให้ปิดเสียง
         bgm.muted = true
         audioToggle.classList.add('muted')
       }

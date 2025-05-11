@@ -2,16 +2,18 @@
 <audio
   id='bgm'
   loop
+  muted
+  preload='auto'
 >
   <source
-    src='bgm/bgm.MP3'
+    src='/bgm/bgm.MP3'
     type='audio/mpeg'
   />
 </audio>
 <div class='audio-control'>
   <button
     id='audio-toggle'
-    class='audio-btn'
+    class='audio-btn muted'
   >
     <svg
       class='audio-on'
@@ -51,3 +53,109 @@
     </svg>
   </button>
 </div>
+
+<script is:inline>
+  // จัดการกับปุ่มควบคุมเสียงในส่วน MusicPlayer component
+  document.addEventListener('DOMContentLoaded', function () {
+    const audioToggle = document.getElementById('audio-toggle')
+
+    if (!audioToggle) return
+
+    // รอให้ window.toggleBGM ถูกกำหนดค่าจาก Layout
+    const checkForGlobalBGM = function () {
+      if (typeof window.toggleBGM === 'function') {
+        initToggleButton()
+      } else {
+        // ลองอีกครั้งหลังจากนี้ 100ms
+        setTimeout(checkForGlobalBGM, 100)
+      }
+    }
+
+    // เริ่มต้นตรวจสอบ
+    checkForGlobalBGM()
+
+    // ฟังก์ชันเริ่มต้นปุ่มควบคุม
+    function initToggleButton() {
+      // สถานะเริ่มต้นให้เป็น muted (เพื่อความเป็นมิตรกับผู้ใช้)
+      let isMuted = true
+
+      // ฟังก์ชันอัพเดตสถานะปุ่ม
+      const updateButtonState = function (muted) {
+        if (muted) {
+          audioToggle.classList.add('muted')
+        } else {
+          audioToggle.classList.remove('muted')
+        }
+      }
+
+      // ตั้งค่าการคลิกปุ่ม
+      audioToggle.addEventListener('click', function () {
+        // เรียกใช้ toggleBGM จาก global scope และรับค่าสถานะปัจจุบัน
+        const isPlaying = window.toggleBGM()
+
+        // อัพเดตสถานะของปุ่ม
+        updateButtonState(!isPlaying)
+      })
+    }
+  })
+</script>
+
+<style>
+  /* ทำให้ปุ่มเด่นชัดยิ่งขึ้น */
+  .audio-control {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 9999; /* ทำให้อยู่ด้านบนสุดเสมอ */
+  }
+
+  .audio-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--secondary-color);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(123, 92, 67, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(123, 92, 67, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(123, 92, 67, 0);
+    }
+  }
+
+  .audio-btn:hover {
+    transform: scale(1.1);
+    background-color: var(--accent-color);
+  }
+
+  .audio-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .audio-off {
+    display: none;
+  }
+
+  .audio-btn.muted .audio-on {
+    display: none;
+  }
+
+  .audio-btn.muted .audio-off {
+    display: block;
+  }
+</style>

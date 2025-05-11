@@ -11,9 +11,9 @@ interface MosaicImage {
 
 // Constants
 const ANIMATION_CONFIG = {
-  DELAY: 100,
+  DELAY: 0,
   THRESHOLD: 0.1,
-  ROOT_MARGIN: '10px 0px',
+  ROOT_MARGIN: '0px -100px',
   TRANSITION_TIMING: 'cubic-bezier(0.4, 0, 0.2, 1)',
   TRANSITION_DURATION: '0.6s',
 } as const
@@ -21,17 +21,46 @@ const ANIMATION_CONFIG = {
 // Utils
 const getMosaicImages = (): MosaicImage[] => {
   const slideDir = path.join(process.cwd(), 'public/img/sweet')
-  const files = fs.readdirSync(slideDir).sort((a: string, b: string) => {
-    const numA = parseInt(a.match(/\d+/)?.[0] || '0', 10)
-    const numB = parseInt(b.match(/\d+/)?.[0] || '0', 10)
-    return numA - numB
-  })
 
-  return files.map((filename: string) => ({
-    filename,
-    path: `/img/sweet/${filename}`,
-    caption: `Photo ${filename}`,
-  }))
+  // Make sure the directory exists
+  if (!fs.existsSync(slideDir)) {
+    return []
+  }
+
+  // Get all files and filter for valid image files
+  const files = fs
+    .readdirSync(slideDir)
+    .filter((filename) => {
+      // Only include .webp files
+      return (
+        filename.endsWith('.webp') &&
+        // Make sure the filename has a number
+        /\d+/.test(filename) &&
+        // Ensure it's actually a file
+        fs.statSync(path.join(slideDir, filename)).isFile()
+      )
+    })
+    .sort((a: string, b: string) => {
+      const numA = parseInt(a.match(/\d+/)?.[0] || '0', 10)
+      const numB = parseInt(b.match(/\d+/)?.[0] || '0', 10)
+      return numA - numB
+    })
+
+  return files.map((filename: string) => {
+    // Get filename without extension
+    const filenameWithoutExt = filename.replace(/\.\w+$/, '')
+
+    // Make sure we have a valid filename
+    if (!filenameWithoutExt || filenameWithoutExt.trim() === '') {
+      // Invalid filename, skip warning
+    }
+
+    return {
+      filename: filenameWithoutExt,
+      path: `/img/sweet/${filename}`,
+      caption: `Photo ${filenameWithoutExt}`,
+    }
+  })
 }
 
 const mosaicImages = getMosaicImages()
@@ -86,8 +115,8 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
     opacity: 0;
     transform: scale(0.95) translateY(20px);
     transition:
-      opacity var(--transitionDuration) var(--transitionTiming),
-      transform var(--transitionDuration) var(--transitionTiming);
+      opacity 0.5s var(--transitionTiming),
+      transform 0.5s var(--transitionTiming);
     will-change: opacity, transform;
   }
 
@@ -100,8 +129,8 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
     opacity: 0;
     transform: scale(0.98);
     transition:
-      opacity var(--transitionDuration) var(--transitionTiming),
-      transform var(--transitionDuration) var(--transitionTiming);
+      opacity 0.5s var(--transitionTiming),
+      transform 0.5s var(--transitionTiming);
     will-change: opacity, transform;
     background-position: center;
     background-size: cover;
@@ -133,7 +162,7 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 
   // Constants
   const ANIMATION_CONFIG: AnimationConfig = {
-    DELAY: 100,
+    DELAY: 0,
     THRESHOLD: 0.1,
     ROOT_MARGIN: '10px 0px',
   }
@@ -141,7 +170,7 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
   const CACHE_CONFIG: CacheConfig = {
     CACHE_NAME: 'mosaic-images',
     CACHE_VERSION: 'v1',
-    MAX_CACHED_IMAGES: 50, // Maximum number of images to cache
+    MAX_CACHED_IMAGES: 100, // Increased to cache more images at once
   }
 
   // Cache Management
@@ -151,24 +180,28 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
     const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
     const cache = await caches.open(cacheName)
 
-    // Preload and cache visible images
-    const visibleImages = document.querySelectorAll<HTMLElement>(
+    // Preload and cache all images right away
+    const allImages = document.querySelectorAll<HTMLElement>(
       '.mosaic-image[data-src]'
     )
-    const imagesToCache = Array.from(visibleImages)
-      .slice(0, CACHE_CONFIG.MAX_CACHED_IMAGES)
+    const imagesToCache = Array.from(allImages)
       .map((img) => img.dataset.src)
       .filter((src): src is string => !!src)
 
     await Promise.all(
       imagesToCache.map(async (src) => {
         try {
+          // Preload each image directly without showing warning messages
+          const preloadImg = new Image()
+          preloadImg.src = src
+
+          // Also try to cache it
           const response = await fetch(src)
           if (response.ok) {
             await cache.put(src, response)
           }
         } catch (error) {
-          console.warn('Failed to cache image:', src, error)
+          // Silently handle errors
         }
       })
     )
@@ -180,42 +213,30 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
     if (!src) return
 
     try {
-      // Try to get from cache first
-      if ('caches' in window) {
-        const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
-        const cache = await caches.open(cacheName)
-        const cachedResponse = await cache.match(src)
-
-        if (cachedResponse) {
-          const blob = await cachedResponse.blob()
-          const objectUrl = URL.createObjectURL(blob)
-          image.style.backgroundImage = `url(${objectUrl})`
-          delete image.dataset.src
-          return
-        }
-      }
-
-      // If not in cache or caching not supported, load normally
+      // Load directly without waiting for cache
       image.style.backgroundImage = `url(${src})`
       delete image.dataset.src
 
       // Cache the image for future use
       if ('caches' in window) {
-        const response = await fetch(src)
-        if (response.ok) {
-          const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
-          const cache = await caches.open(cacheName)
-          await cache.put(src, response.clone())
+        const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
+        const cache = await caches.open(cacheName)
+        try {
+          const response = await fetch(src)
+          if (response.ok) {
+            await cache.put(src, response.clone())
+          }
+        } catch (e) {
+          // Silently handle fetch errors for caching
         }
       }
     } catch (error) {
-      console.warn('Failed to load image:', src, error)
       image.style.backgroundImage = `url(${src})` // Fallback to direct loading
       delete image.dataset.src
     }
   }
 
-  // Lazy Loading with Cache
+  // Lazy Loading with Cache - modified to load all visible images immediately
   const setupLazyLoading = (): void => {
     const images = document.querySelectorAll<HTMLElement>(
       '.mosaic-image[data-src]'
@@ -237,7 +258,7 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
         })
       },
       {
-        rootMargin: '50px',
+        rootMargin: '100px', // Increased from 50px to load sooner
         threshold: 0.01,
       }
     )
@@ -250,11 +271,9 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
     const items = document.querySelectorAll<HTMLElement>('.mosaic-item')
 
     if (!('IntersectionObserver' in window)) {
-      items.forEach((item, index) => {
-        setTimeout(
-          () => item.classList.add('visible'),
-          index * ANIMATION_CONFIG.DELAY
-        )
+      // Show all items at once instead of one by one
+      items.forEach((item) => {
+        item.classList.add('visible')
       })
       return
     }
@@ -265,15 +284,12 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
           if (!entry.isIntersecting) return
 
           const item = entry.target as HTMLElement
-          const items = document.querySelectorAll<HTMLElement>('.mosaic-item')
-          const index = Array.from(items).indexOf(item)
 
+          // Immediately make item visible without delay
           requestAnimationFrame(() => {
-            setTimeout(() => {
-              item.classList.add('visible')
-              const image = item.querySelector<HTMLElement>('.mosaic-image')
-              if (image?.dataset.src) loadImage(image)
-            }, index * ANIMATION_CONFIG.DELAY)
+            item.classList.add('visible')
+            const image = item.querySelector<HTMLElement>('.mosaic-image')
+            if (image?.dataset.src) loadImage(image)
           })
 
           observer.unobserve(item)
@@ -321,8 +337,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
   function createModal() {
     if (document.querySelector('.image-modal')) return
 
-    console.log('Creating image modal')
-
     const modalHTML = `
       <div class="image-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="image-modal-backdrop"></div>
@@ -341,7 +355,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
           <button class="image-modal-nav image-modal-prev" aria-label="Previous image">&lt;</button>
           <button class="image-modal-nav image-modal-next" aria-label="Next image">&gt;</button>
           <img class="image-modal-image" src="" alt="Full size image" style="opacity:0;transition:opacity 0.3s ease;">
-          <div class="image-modal-caption"></div>
           <div class="image-modal-footer">
             <button class="image-modal-btn image-modal-close-btn" aria-label="Close">Close</button>
           </div>
@@ -368,7 +381,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
             '.image-modal-loading'
           ) as HTMLElement
           if (loading) loading.textContent = 'Failed to load image'
-          console.error('Failed to load image:', img.src)
         }
       }
     }
@@ -380,7 +392,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
     // Create modal immediately to ensure it's ready
     const modal = createModal() as HTMLElement
     if (!modal) {
-      console.error('Failed to create modal')
       return
     }
 
@@ -388,9 +399,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
     const setupModal = () => {
       const modalImage =
         modal.querySelector<HTMLImageElement>('.image-modal-image')
-      const modalCaption = modal.querySelector<HTMLDivElement>(
-        '.image-modal-caption'
-      )
       const modalTitle =
         modal.querySelector<HTMLHeadingElement>('.image-modal-title')
       const modalClose =
@@ -412,7 +420,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
       // Safety check for required elements
       if (
         !modalImage ||
-        !modalCaption ||
         !modalClose ||
         !modalCloseBtn ||
         !modalBackdrop ||
@@ -421,7 +428,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
         !modalTitle ||
         !loadingElement
       ) {
-        console.error('Modal elements not found')
         return
       }
 
@@ -429,8 +435,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
       const mosaicItems = Array.from(
         document.querySelectorAll<HTMLElement>('.mosaic-item')
       )
-
-      console.log(`Found ${mosaicItems.length} mosaic items`)
 
       // Preload the adjacent images when showing an image
       const preloadAdjacentImages = (index: number) => {
@@ -444,7 +448,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
           if (imagePath) {
             const preloadImg = new Image()
             preloadImg.src = imagePath
-            console.log('Preloading:', imagePath)
             return
           }
 
@@ -454,7 +457,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 
           const preloadImg = new Image()
           preloadImg.src = imgUrl
-          console.log('Preloading:', imgUrl)
         }
 
         // Preload next and previous images
@@ -465,19 +467,24 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
       // Function to get image URL from mosaic item - with memory caching
       const urlCache = new Map<HTMLElement, string>()
       const getImageUrl = (item: HTMLElement): string => {
-        if (urlCache.has(item)) return urlCache.get(item) || ''
+        if (urlCache.has(item)) {
+          const cachedUrl = urlCache.get(item) || ''
+          // Validate cached URL
+          if (cachedUrl && cachedUrl !== '/' && cachedUrl.trim() !== '') {
+            return cachedUrl
+          }
+          // If the cached URL is invalid, continue with other methods
+        }
 
         // Try data-image-path first (most reliable)
         const directPath = item.getAttribute('data-image-path')
-        if (directPath) {
-          console.log('URL from data-image-path:', directPath)
+        if (directPath && directPath !== '/' && directPath.trim() !== '') {
           urlCache.set(item, directPath)
           return directPath
         }
 
         const imageElement = item.querySelector<HTMLElement>('.mosaic-image')
         if (!imageElement) {
-          console.error('No image element found for item', item)
           return ''
         }
 
@@ -485,15 +492,15 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
         const backgroundImage = getComputedStyle(imageElement).backgroundImage
         if (backgroundImage && backgroundImage !== 'none') {
           const url = backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1')
-          console.log('URL from background-image:', url)
-          urlCache.set(item, url)
-          return url
+          if (url && url !== '/' && url.trim() !== '') {
+            urlCache.set(item, url)
+            return url
+          }
         }
 
         // Fallback to data-src attribute if background image not set yet
         const dataSrc = imageElement.getAttribute('data-src')
-        if (dataSrc) {
-          console.log('URL from data-src:', dataSrc)
+        if (dataSrc && dataSrc !== '/' && dataSrc.trim() !== '') {
           // For images still using data-src, force loading the image
           imageElement.style.backgroundImage = `url(${dataSrc})`
           urlCache.set(item, dataSrc)
@@ -502,11 +509,14 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 
         // Extract image number from data-image-number or class or data-caption
         const imageNumber = item.getAttribute('data-image-number')
-        if (imageNumber) {
-          const directUrl = `/img/sweet/${imageNumber}.webp`
-          console.log('URL constructed from data-image-number:', directUrl)
-          urlCache.set(item, directUrl)
-          return directUrl
+        if (imageNumber && imageNumber.trim() !== '') {
+          // Strip any existing .webp extension to prevent double extensions
+          const cleanNumber = imageNumber.replace(/\.webp$/, '')
+          if (cleanNumber && cleanNumber.trim() !== '') {
+            const directUrl = `/img/sweet/${cleanNumber}.webp`
+            urlCache.set(item, directUrl)
+            return directUrl
+          }
         }
 
         // Try from data-caption as last resort
@@ -514,13 +524,13 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
         const match = caption.match(/Photo (\d+)/)
         if (match && match[1]) {
           const imgNumber = match[1]
-          const directUrl = `/img/sweet/${imgNumber}.webp`
-          console.log('URL constructed from caption:', directUrl)
-          urlCache.set(item, directUrl)
-          return directUrl
+          if (imgNumber && imgNumber.trim() !== '') {
+            const directUrl = `/img/sweet/${imgNumber}.webp`
+            urlCache.set(item, directUrl)
+            return directUrl
+          }
         }
 
-        console.error('Could not get image URL by any method for item', item)
         return ''
       }
 
@@ -528,7 +538,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
       const updateModalContent = (index: number): void => {
         const item = mosaicItems[index]
         if (!item) {
-          console.error('Item not found at index', index)
           return
         }
 
@@ -543,43 +552,38 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
         const imagePath = item.getAttribute('data-image-path')
         let imageUrl = ''
 
-        if (imagePath) {
+        if (imagePath && imagePath.trim() !== '/') {
           imageUrl = imagePath
-          console.log('Using direct path:', imageUrl)
         } else {
           // Fall back to other methods
           imageUrl = getImageUrl(item)
         }
 
-        if (!imageUrl) {
-          console.error(
-            'Could not get image URL for item',
-            item,
-            'at index',
-            index,
-            'item number:',
-            item.getAttribute('data-image-number')
-          )
+        if (!imageUrl || imageUrl.trim() === '/' || imageUrl.trim() === '') {
           loadingElement.textContent = 'Image not found'
+
+          // Show placeholder image for empty URLs
+          modalImage.src =
+            'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="20">Image not found</text></svg>'
+          modalImage.style.opacity = '1'
           return
         }
 
-        console.log(`Showing image at index ${index}, URL: ${imageUrl}`)
-
-        const caption = item.getAttribute('data-caption') || ''
         const imageIndex = index + 1
 
         // Set image source with error handling
         modalImage.onerror = () => {
-          console.error(`Failed to load image: ${imageUrl}`)
           loadingElement.textContent = `Failed to load image: ${imageUrl}`
 
           // Try with a clean path as fallback
           const imageNumber = item.getAttribute('data-image-number')
-          if (imageNumber) {
-            const fallbackUrl = `/img/sweet/${imageNumber}.webp`
-            console.log('Trying fallback URL:', fallbackUrl)
-            if (fallbackUrl !== imageUrl) {
+          if (imageNumber && imageNumber.trim() !== '') {
+            // Ensure we're not adding double extensions
+            const fallbackUrl = `/img/sweet/${imageNumber.replace(/\.webp$/, '')}.webp`
+            if (
+              fallbackUrl !== imageUrl &&
+              fallbackUrl !== '/img/sweet/.webp'
+            ) {
               modalImage.src = fallbackUrl
               return
             }
@@ -596,7 +600,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 
         modalImage.src = imageUrl
 
-        modalCaption.textContent = caption
         modalTitle.textContent = `Photo ${imageIndex} of ${mosaicItems.length}`
         currentIndex = index
 
@@ -625,7 +628,6 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
         document.body.style.overflow = ''
         setTimeout(() => {
           modalImage.src = ''
-          modalCaption.textContent = ''
           currentIndex = -1
         }, 300)
       }
@@ -733,13 +735,19 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 
   // Initialize everything when DOM is ready
   document.addEventListener('DOMContentLoaded', () => {
-    // Initialize cache first
-    initializeCache().catch(console.warn)
-
-    // Then setup other features
-    setupLazyLoading()
+    // Set up animations first to make elements visible
     setupAnimations()
+
+    // Then load the images
+    setupLazyLoading()
+
+    // Set up other features in parallel
     setupHoverEffects()
     setupImageModal()
+
+    // Initialize cache in the background
+    setTimeout(() => {
+      initializeCache().catch(() => {})
+    }, 100)
   })
 </script>

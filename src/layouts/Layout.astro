@@ -198,6 +198,78 @@ import '../styles/global.css'
       }
     </script>
 
+    <!-- Wedding Background Music Autoplay Workaround -->
+    <script is:inline>
+      // เพิ่มฟังก์ชันที่จะพยายามเล่นเพลงทันทีที่มีการโต้ตอบแรกกับเว็บไซต์
+      document.addEventListener('DOMContentLoaded', function () {
+        // สร้าง Audio element โดยตรงในระดับสูง
+        const bgmGlobal = new Audio('/bgm/bgm.MP3')
+        bgmGlobal.id = 'bgm-global'
+        bgmGlobal.loop = true
+        bgmGlobal.volume = 0.6
+
+        // เพิ่มลงใน DOM เพื่อให้สามารถควบคุมได้จากที่อื่น
+        bgmGlobal.style.display = 'none'
+        document.body.appendChild(bgmGlobal)
+
+        // เก็บสถานะว่าเพลงเริ่มเล่นแล้วหรือยัง
+        window.bgmStarted = false
+
+        // ฟังก์ชันที่จะเริ่มเล่นเพลง
+        const playBGM = function () {
+          if (window.bgmStarted) return
+
+          try {
+            bgmGlobal
+              .play()
+              .then(() => {
+                window.bgmStarted = true
+                console.log('BGM started successfully')
+
+                // เมื่อเพลงเริ่มเล่นแล้ว ลบ event listener ทั้งหมดออก
+                document.removeEventListener('click', playBGM)
+                document.removeEventListener('touchstart', playBGM)
+                document.removeEventListener('keydown', playBGM)
+                document.removeEventListener('scroll', playBGM)
+              })
+              .catch((err) => {
+                // หากไม่สามารถเล่นเพลงได้ ปล่อยให้ event listener ยังทำงานต่อไป
+                console.log('Cannot play BGM yet, waiting for more interaction')
+              })
+          } catch (e) {
+            // กรณีเกิด error ก็ปล่อยให้ event listener ยังทำงานต่อไป
+          }
+        }
+
+        // เพิ่ม event listener สำหรับทุกการโต้ตอบกับเว็บไซต์
+        document.addEventListener('click', playBGM)
+        document.addEventListener('touchstart', playBGM)
+        document.addEventListener('keydown', playBGM)
+        document.addEventListener('scroll', playBGM)
+
+        // เปิดให้ component อื่นๆ เข้าถึงตัวเล่นเพลงได้
+        window.getBGM = function () {
+          return bgmGlobal
+        }
+
+        // ฟังก์ชันสำหรับเปิด/ปิดเพลง
+        window.toggleBGM = function (mute) {
+          if (typeof mute === 'boolean') {
+            bgmGlobal.muted = mute
+          } else {
+            bgmGlobal.muted = !bgmGlobal.muted
+          }
+
+          // ถ้ายังไม่เริ่มเล่น และต้องการเปิดเพลง ให้ลองเล่น
+          if (!window.bgmStarted && !bgmGlobal.muted) {
+            playBGM()
+          }
+
+          return !bgmGlobal.muted // return ค่าปัจจุบัน (true = เปิดเสียง, false = ปิดเสียง)
+        }
+      })
+    </script>
+
     <!-- Consolidated GSAP scripts -->
     <script
       is:inline

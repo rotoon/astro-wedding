@@ -17,5 +17,17 @@
     "@types/gsap": "^3.0.0",
     "terser": "^5.39.0",
     "vite-plugin-imagemin": "^0.6.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "cwebp-bin",
+      "esbuild",
+      "gifsicle",
+      "jpegtran-bin",
+      "mozjpeg",
+      "optipng-bin",
+      "pngquant-bin",
+      "sharp"
+    ]
   }
 }
