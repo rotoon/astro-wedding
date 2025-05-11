@@ -49,41 +49,6 @@ window.debounce = (func, wait, immediate = false) => {
   }
 }
 
-// Optimized throttle with leading and trailing options
-window.throttle = (
-  func,
-  limit,
-  options = { leading: true, trailing: true }
-) => {
-  let timeout
-  let previous = 0
-
-  return function executedFunction(...args) {
-    const now = Date.now()
-    const { leading, trailing } = options
-
-    if (!previous && !leading) previous = now
-
-    const remaining = limit - (now - previous)
-
-    if (remaining <= 0 || remaining > limit) {
-      if (timeout) {
-        clearTimeout(timeout)
-        timeout = null
-      }
-
-      previous = now
-      func.apply(this, args)
-    } else if (!timeout && trailing) {
-      timeout = setTimeout(() => {
-        previous = leading ? Date.now() : 0
-        timeout = null
-        func.apply(this, args)
-      }, remaining)
-    }
-  }
-}
-
 // Improved image preloading with priority and abort controller
 window.preloadImages = (selector, priority = 'low') => {
   // Create an AbortController to cancel preloading if needed
