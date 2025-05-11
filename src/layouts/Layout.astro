@@ -6,13 +6,15 @@ interface Props {
   description?: string
   image?: string
   canonicalURL?: string
+  dynamicOgImage?: boolean
 }
 
 const {
   title = 'SOM & TOON Wedding Invitation | May 25, 2025',
-  description = 'Join us for the wedding celebration of Suchanya (Som) & Nuttapon (Toon) on May 25, 2025, at Virgin Ville Sanpatong, Chiangmai, Thailand. An elegant celebration of our love.',
+  description = 'Join us for the wedding celebration of Suchanya (Som) & Nuttapon (Toon) on May 25, 2025, at Virgin Ville Sanpatong, Chiangmai, Thailand. SOM & TOON START TOGETHER 25-05-2025',
   image = '/img/og-cover.webp',
   canonicalURL = Astro.url.href,
+  dynamicOgImage = false,
 } = Astro.props
 
 // Wedding details for structured data
@@ -20,6 +22,11 @@ const weddingDate = '2025-05-25T08:39:00+07:00'
 const weddingLocation =
   'Wedding Venues at Virgin Ville Sanpatong Chiangmai, 194/5 หมู่6 ตำบล ยุหว่า อำเภอสันป่าตอง เชียงใหม่ 50120 ไทย'
 const coupleNames = 'Suchanya & Nuttapon'
+
+// Determine the OpenGraph image URL - use dynamic endpoint if specified
+const ogImageUrl = dynamicOgImage
+  ? new URL('/opengraph.jpg', Astro.url.origin).href
+  : new URL(image, Astro.url.origin).href
 ---
 
 <!doctype html>
@@ -48,7 +55,7 @@ const coupleNames = 'Suchanya & Nuttapon'
     />
     <meta
       name='keywords'
-      content='wedding, wedding invitation, สุชัญญา, ณัฐพล, wedding chiangmai, virgin ville, sanpatong'
+      content='wedding, wedding invitation, สุชัญญา, ณัฐพนธ์, wedding chiangmai, virgin ville, sanpatong'
     />
     <meta
       name='author'
@@ -78,33 +85,83 @@ const coupleNames = 'Suchanya & Nuttapon'
     />
     <meta
       property='og:image'
-      content={new URL(image, Astro.url.origin).href}
+      content={ogImageUrl}
     />
     <meta
       property='og:locale'
       content='th_TH'
     />
+    <meta
+      property='og:site_name'
+      content='SOM&TOON START TOGETHER'
+    />
+    <meta
+      property='og:image:width'
+      content='1200'
+    />
+    <meta
+      property='og:image:height'
+      content='630'
+    />
+    <meta
+      property='og:image:alt'
+      content='SOM & TOON START TOGETHER 25-05-2025'
+    />
+    <meta
+      property='og:updated_time'
+      content={new Date().toISOString()}
+    />
+    <meta
+      property='article:published_time'
+      content={new Date().toISOString()}
+    />
 
-    <!-- Twitter -->
+    <!-- LINE Specific -->
     <meta
-      property='twitter:card'
-      content='summary_large_image'
+      property='line:image'
+      content={ogImageUrl}
     />
     <meta
-      property='twitter:url'
-      content={canonicalURL}
-    />
-    <meta
-      property='twitter:title'
+      property='line:title'
       content={title}
     />
     <meta
-      property='twitter:description'
+      property='line:description'
+      content={description}
+    />
+
+    <!-- Twitter -->
+    <meta
+      name='twitter:card'
+      content='summary_large_image'
+    />
+    <meta
+      name='twitter:url'
+      content={canonicalURL}
+    />
+    <meta
+      name='twitter:title'
+      content={title}
+    />
+    <meta
+      name='twitter:description'
       content={description}
     />
     <meta
-      property='twitter:image'
-      content={new URL(image, Astro.url.origin).href}
+      name='twitter:image'
+      content={ogImageUrl}
+    />
+    <meta
+      name='twitter:image:alt'
+      content='SOM & TOON START TOGETHER 25-05-2025'
+    />
+    <meta
+      name='twitter:creator'
+      content='@weddingthailand'
+    />
+    <meta
+      name='twitter:site'
+      content='@weddingthailand'
     />
 
     <!-- Mobile optimization -->
@@ -156,11 +213,11 @@ const coupleNames = 'Suchanya & Nuttapon'
           }
         },
         "image": [
-          "${new URL('/img/og-cover.webp', Astro.url.origin).href}",
+          "${ogImageUrl}",
           "${new URL('/img/hero.webp', Astro.url.origin).href}",
           "${new URL('/img/bride.webp', Astro.url.origin).href}"
         ],
-        "description": "Join us for our wedding celebration. An elegant celebration of our love.",
+        "description": "SOM & TOON START TOGETHER 25-05-2025",
         "organizer": {
           "@type": "Person",
           "name": "Suchanya & Nuttapon"

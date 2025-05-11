@@ -61,9 +61,12 @@
 
     if (!audioToggle) return
 
-    // รอให้ window.toggleBGM ถูกกำหนดค่าจาก Layout
+    // รอให้ window.toggleBGM และ window.getBGM ถูกกำหนดค่าจาก Layout
     const checkForGlobalBGM = function () {
-      if (typeof window.toggleBGM === 'function') {
+      if (
+        typeof window.toggleBGM === 'function' &&
+        typeof window.getBGM === 'function'
+      ) {
         initToggleButton()
       } else {
         // ลองอีกครั้งหลังจากนี้ 100ms
@@ -76,11 +79,14 @@
 
     // ฟังก์ชันเริ่มต้นปุ่มควบคุม
     function initToggleButton() {
-      // สถานะเริ่มต้นให้เป็น muted (เพื่อความเป็นมิตรกับผู้ใช้)
-      let isMuted = true
+      // ดึง BGM element และตรวจสอบสถานะเริ่มต้น
+      const bgmGlobal = window.getBGM()
+
+      // ตรวจสอบและตั้งค่าสถานะเริ่มต้นของปุ่ม
+      updateButtonState(bgmGlobal.muted)
 
       // ฟังก์ชันอัพเดตสถานะปุ่ม
-      const updateButtonState = function (muted) {
+      function updateButtonState(muted) {
         if (muted) {
           audioToggle.classList.add('muted')
         } else {
@@ -96,6 +102,20 @@
         // อัพเดตสถานะของปุ่ม
         updateButtonState(!isPlaying)
       })
+
+      // เพิ่ม listener เพื่อติดตามการเปลี่ยนแปลงสถานะจากที่อื่น
+      bgmGlobal.addEventListener('play', function () {
+        updateButtonState(bgmGlobal.muted)
+      })
+
+      bgmGlobal.addEventListener('pause', function () {
+        updateButtonState(true)
+      })
+
+      // ตรวจสอบและอัพเดตสถานะทุก 1 วินาที (เผื่อมีการควบคุมจากที่อื่น)
+      setInterval(function () {
+        updateButtonState(bgmGlobal.muted || bgmGlobal.paused)
+      }, 1000)
     }
   })
 </script>

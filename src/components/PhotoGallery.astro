@@ -8,7 +8,7 @@ const slideDir = path.join(process.cwd(), 'public/img/slide')
 const galleryImages = fs
   .readdirSync(slideDir)
   .filter((file) => file.endsWith('.webp'))
-  .sort() // Sort by filename
+  .sort(() => Math.random() - 0.5) // Random sort instead of alphabetical sort
 ---
 
 <!-- Photo Gallery -->
@@ -218,8 +218,16 @@ const galleryImages = fs
         slidesPerView: 3,
         spaceBetween: 30,
       },
-      1200: {
+      1440: {
+        slidesPerView: 4,
+        spaceBetween: 30,
+      },
+      1600: {
         slidesPerView: 5,
+        spaceBetween: 30,
+      },
+      1920: {
+        slidesPerView: 6,
         spaceBetween: 30,
       },
     },

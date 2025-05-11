@@ -50,7 +50,15 @@
   </div>
 </section>
 
-<script>
+<script is:inline>
+  // Define getElement to avoid reference errors
+  const getElement = (selector) => {
+    if (typeof selector === 'string') {
+      return document.querySelector(selector)
+    }
+    return selector
+  }
+
   const weddingDate = new Date('May 25, 2025 08:39:00').getTime()
   const countdownElements = {
     days: getElement('#days'),
