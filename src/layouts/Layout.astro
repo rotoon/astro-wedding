@@ -24,9 +24,7 @@ const weddingLocation =
 const coupleNames = 'Suchanya & Nuttapon'
 
 // Determine the OpenGraph image URL - use dynamic endpoint if specified
-const ogImageUrl = dynamicOgImage
-  ? new URL('/opengraph.jpg', Astro.url.origin).href
-  : new URL(image, Astro.url.origin).href
+const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
 ---
 
 <!doctype html>
