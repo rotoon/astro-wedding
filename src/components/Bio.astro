@@ -96,58 +96,7 @@ const ANIMATION_CONFIG = {
   <div class='accent-shape shape-2'></div>
 </section>
 
-<style>
-  /* Base card styles */
-  .bio-card {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: opacity, transform;
-  }
-
-  .bio-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Photo animation */
-  .bio-photo {
-    transform: scale(0.9);
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
-  }
-
-  .bio-card:hover .bio-photo {
-    transform: scale(1);
-  }
-
-  /* Info text animation */
-  .bio-info {
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    transition-delay: 0.2s;
-    will-change: opacity, transform;
-  }
-
-  .bio-card.visible .bio-info {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Heart animation */
-  .bio-heart {
-    opacity: 0;
-    transform: scale(0.5);
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: opacity, transform;
-  }
-
-  .bio-separator.visible .bio-heart {
-    opacity: 1;
-    transform: scale(1);
-  }
-</style>
+<!-- All styles have been moved to global.css -->
 
 <script>
   // Types

@@ -41,8 +41,8 @@ const getMosaicImages = (): MosaicImage[] => {
       )
     })
     .sort((a: string, b: string) => {
-      const numA = parseInt(a.match(/\d+/)?.[0] || '0', 10)
-      const numB = parseInt(b.match(/\d+/)?.[0] || '0', 10)
+      const numA = Number.parseInt(a.match(/\d+/)?.[0] || '0', 10)
+      const numB = Number.parseInt(b.match(/\d+/)?.[0] || '0', 10)
       return numA - numB
     })
 
@@ -105,46 +105,7 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
   </div>
 </section>
 
-<style
-  define:vars={{
-    transitionTiming: ANIMATION_CONFIG.TRANSITION_TIMING,
-    transitionDuration: ANIMATION_CONFIG.TRANSITION_DURATION,
-  }}
->
-  .mosaic-item {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-    transition:
-      opacity 0.5s var(--transitionTiming),
-      transform 0.5s var(--transitionTiming);
-    will-change: opacity, transform;
-  }
-
-  .mosaic-item.visible {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-
-  .mosaic-image {
-    opacity: 0;
-    transform: scale(0.98);
-    transition:
-      opacity 0.5s var(--transitionTiming),
-      transform 0.5s var(--transitionTiming);
-    will-change: opacity, transform;
-    background-position: center;
-    background-size: cover;
-  }
-
-  .mosaic-item.visible .mosaic-image {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  .mosaic-item.hover {
-    transform: translateY(-5px);
-  }
-</style>
+<!-- All styles have been moved to global.css -->
 
 <script>
   // Types
