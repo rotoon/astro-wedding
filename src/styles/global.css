@@ -418,10 +418,10 @@ img {
   animation-delay: 1s;
 }
 .date-line:nth-child(2) span {
-  animation-delay: 1.2s;
+  animation-delay: 1.5s;
 }
 .date-line:nth-child(3) span {
-  animation-delay: 1.4s;
+  animation-delay: 2s;
 }
 
 @keyframes slideUp {
@@ -2035,9 +2035,14 @@ img {
 }
 
 /* ========= Responsive Design ========= */
+
 @media (max-width: 767px) {
   :root {
     --section-spacing: 4rem;
+  }
+
+  .hero-date {
+    top: 10%;
   }
 
   .main-title {
@@ -2045,11 +2050,11 @@ img {
   }
 
   .date-line {
-    height: 60px;
+    height: 40px;
   }
 
   .date-line span {
-    font-size: 3rem;
+    font-size: 2rem;
   }
 
   .section-title {
