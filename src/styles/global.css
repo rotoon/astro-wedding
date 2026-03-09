@@ -1138,6 +1138,11 @@ img {
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
+.swiper-button-prev svg,
+.swiper-button-next svg {
+  height: 50%;
+}
+
 .swiper-button-prev:hover,
 .swiper-button-next:hover {
   background-color: var(--gold-color);
