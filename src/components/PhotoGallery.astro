@@ -1,42 +1,56 @@
 ---
+import { couple } from '../data/wedding'
 import { listPublicImages, shuffle } from '../utils/images'
 
-// Every image in public/img/slide, in a new random order on each build
-const galleryImages = shuffle(listPublicImages('img/slide'))
+interface Props {
+  /** Folder under public/ whose images become slides */
+  folder: string
+  title: string
+  /** New random order on each build (default) or file-name order */
+  shuffled?: boolean
+}
+
+const { folder, title, shuffled = true } = Astro.props
+const images = listPublicImages(folder)
+const galleryImages = shuffled ? shuffle(images) : images
 ---
 
-<!-- Photo Gallery -->
-<section class='gallery-section'>
-  <div class='gallery-title-container'>
-    <div class='gallery-ornament left'></div>
-    <h2 class='section-title gallery-title reveal-title'>Our Love Story</h2>
-    <div class='gallery-ornament right'></div>
-  </div>
+<!-- Photo Gallery (rendered only when the folder has images) -->
+{
+  galleryImages.length > 0 && (
+    <section class='gallery-section'>
+      <div class='gallery-title-container'>
+        <div class='gallery-ornament left'></div>
+        <h2 class='section-title gallery-title reveal-title'>{title}</h2>
+        <div class='gallery-ornament right'></div>
+      </div>
 
-  <div class='swiper-container'>
-    <div class='swiper-wrapper'>
-      {
-        galleryImages.map((src, index) => (
-          <div class='swiper-slide'>
-            <div class='gallery-image'>
-              <img
-                src={src}
-                alt={`Som & Toon, photo ${index + 1} of ${galleryImages.length}`}
-                loading='lazy'
-                decoding='async'
-              />
-            </div>
-          </div>
-        ))
-      }
-    </div>
-    <div class='swiper-pagination'></div>
-  </div>
-  <div class='gallery-controls'>
-    <div class='swiper-button-prev'></div>
-    <div class='swiper-button-next'></div>
-  </div>
-</section>
+      <div class='swiper-container'>
+        <div class='swiper-wrapper'>
+          {
+            galleryImages.map((src, index) => (
+              <div class='swiper-slide'>
+                <div class='gallery-image'>
+                  <img
+                    src={src}
+                    alt={`${couple.bride.nickname} & ${couple.groom.nickname}, ${title}, photo ${index + 1} of ${galleryImages.length}`}
+                    loading='lazy'
+                    decoding='async'
+                  />
+                </div>
+              </div>
+            ))
+          }
+        </div>
+        <div class='swiper-pagination'></div>
+      </div>
+      <div class='gallery-controls'>
+        <div class='swiper-button-prev'></div>
+        <div class='swiper-button-next'></div>
+      </div>
+    </section>
+  )
+}
 
 <script>
   import Swiper from 'swiper'
@@ -49,49 +63,55 @@ const galleryImages = shuffle(listPublicImages('img/slide'))
     '(prefers-reduced-motion: reduce)'
   ).matches
 
-  new Swiper('.swiper-container', {
-    modules: [A11y, Autoplay, Navigation, Pagination],
-    grabCursor: true,
-    slidesPerView: 1,
-    spaceBetween: 20,
-    // Swiper switches the nearest lazy images to eager so slides are ready before they appear
-    lazyPreloadPrevNext: 2,
-    pagination: {
-      el: '.swiper-pagination',
-      clickable: true,
-    },
-    navigation: {
-      nextEl: '.swiper-button-next',
-      prevEl: '.swiper-button-prev',
-    },
-    a11y: {
-      prevSlideMessage: 'Previous photo',
-      nextSlideMessage: 'Next photo',
-    },
-    breakpoints: {
-      768: {
-        slidesPerView: 2,
-        spaceBetween: 20,
+  // One Swiper per gallery section, each with its own arrows and dots
+  document.querySelectorAll<HTMLElement>('.gallery-section').forEach((section) => {
+    const container = section.querySelector<HTMLElement>('.swiper-container')
+    if (!container) return
+
+    new Swiper(container, {
+      modules: [A11y, Autoplay, Navigation, Pagination],
+      grabCursor: true,
+      slidesPerView: 1,
+      spaceBetween: 20,
+      // Swiper switches the nearest lazy images to eager so slides are ready before they appear
+      lazyPreloadPrevNext: 2,
+      pagination: {
+        el: section.querySelector<HTMLElement>('.swiper-pagination'),
+        clickable: true,
       },
-      992: {
-        slidesPerView: 3,
-        spaceBetween: 30,
+      navigation: {
+        nextEl: section.querySelector<HTMLElement>('.swiper-button-next'),
+        prevEl: section.querySelector<HTMLElement>('.swiper-button-prev'),
       },
-      1440: {
-        slidesPerView: 4,
-        spaceBetween: 30,
+      a11y: {
+        prevSlideMessage: 'Previous photo',
+        nextSlideMessage: 'Next photo',
       },
-      1600: {
-        slidesPerView: 5,
-        spaceBetween: 30,
-      },
-    },
-    autoplay: prefersReducedMotion
-      ? false
-      : {
-          delay: 3000,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
+      breakpoints: {
+        768: {
+          slidesPerView: 2,
+          spaceBetween: 20,
         },
+        992: {
+          slidesPerView: 3,
+          spaceBetween: 30,
+        },
+        1440: {
+          slidesPerView: 4,
+          spaceBetween: 30,
+        },
+        1600: {
+          slidesPerView: 5,
+          spaceBetween: 30,
+        },
+      },
+      autoplay: prefersReducedMotion
+        ? false
+        : {
+            delay: 3000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          },
+    })
   })
 </script>

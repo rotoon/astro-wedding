@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro'
 
-const pages = [{ path: '/', priority: 1.0, changeFreq: 'monthly' }]
+const pages = [
+  { path: '/', priority: 1.0, changeFreq: 'monthly' },
+  { path: '/wishes/', priority: 0.8, changeFreq: 'daily' },
+]
 
 export const GET: APIRoute = ({ site }) => {
   if (!site) {

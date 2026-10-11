@@ -1,0 +1,137 @@
+---
+// Latest guestbook wishes on the homepage. Read through the Firestore REST API
+// by a small script (no Firebase SDK here); the full guestbook lives at /wishes.
+---
+
+<section
+  class='wishes-wall'
+  id='wishes'
+>
+  <div class='section-decorative-line'></div>
+  <h2 class='section-title reveal-title'>Wishes From You</h2>
+  <p class='wishes-wall-intro reveal-item'>คำอวยพรจากทุกคนที่ส่งมาให้เรา</p>
+
+  <div
+    class='wishes-wall-grid'
+    data-wishes-wall
+    aria-live='polite'
+  >
+  </div>
+
+  <div class='wishes-wall-actions reveal-item'>
+    <a
+      class='map-nav-btn'
+      href='/wishes/'>อ่านคำอวยพรทั้งหมด</a
+    >
+    <a
+      class='wishes-wall-link'
+      href='/wishes/new/'>เขียนคำอวยพร ♥</a
+    >
+  </div>
+</section>
+
+<script>
+  import { emulatorHost, firebaseConfig, isConfigured, WISHES_COLLECTION } from '../features/wishes/config'
+  import { relativeTime } from '../features/wishes/time'
+
+  const WALL_SIZE = 6
+
+  interface WallWish {
+    name: string
+    message: string
+    photo?: string
+    createdAt: Date
+  }
+
+  // Firestore REST returns typed values: { stringValue }, { timestampValue }, …
+  type FirestoreValue = {
+    stringValue?: string
+    timestampValue?: string
+    arrayValue?: { values?: FirestoreValue[] }
+  }
+  type FirestoreDocument = { fields?: Record<string, FirestoreValue> }
+
+  const endpoint = () => {
+    const base = emulatorHost
+      ? `http://${emulatorHost}:8080/v1`
+      : 'https://firestore.googleapis.com/v1'
+    // Built by hand: URLSearchParams turns the space into "+", which Firestore
+    // reads literally ("Invalid order by clause")
+    const params: Record<string, string> = { orderBy: 'createdAt desc', pageSize: String(WALL_SIZE) }
+    if (!emulatorHost && firebaseConfig.apiKey) params.key = firebaseConfig.apiKey
+    const query = Object.entries(params)
+      .map(([name, value]) => `${name}=${encodeURIComponent(value)}`)
+      .join('&')
+    return `${base}/projects/${firebaseConfig.projectId}/databases/(default)/documents/${WISHES_COLLECTION}?${query}`
+  }
+
+  const toWish = ({ fields = {} }: FirestoreDocument): WallWish => ({
+    name: fields.name?.stringValue ?? '',
+    message: fields.message?.stringValue ?? '',
+    photo: fields.photoURLs?.arrayValue?.values?.[0]?.stringValue,
+    createdAt: new Date(fields.createdAt?.timestampValue ?? Date.now()),
+  })
+
+  // Built with textContent only: guest-written text never becomes HTML
+  const card = (wish: WallWish) => {
+    const article = document.createElement('article')
+    article.className = 'wall-card'
+
+    if (wish.photo) {
+      const img = document.createElement('img')
+      img.className = 'wall-photo'
+      img.src = wish.photo
+      img.alt = ''
+      img.loading = 'lazy'
+      img.decoding = 'async'
+      article.append(img)
+    }
+
+    const message = document.createElement('p')
+    message.className = 'wall-message'
+    message.textContent = wish.message
+
+    const footer = document.createElement('footer')
+    footer.className = 'wall-meta'
+    const name = document.createElement('span')
+    name.className = 'wall-name'
+    name.textContent = wish.name
+    const time = document.createElement('time')
+    time.dateTime = wish.createdAt.toISOString()
+    time.textContent = relativeTime(wish.createdAt)
+    footer.append(name, time)
+
+    article.append(message, footer)
+    return article
+  }
+
+  const load = async (grid: HTMLElement) => {
+    try {
+      const response = await fetch(endpoint())
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const { documents = [] } = (await response.json()) as { documents?: FirestoreDocument[] }
+      const wishes = documents.map(toWish).filter((wish) => wish.name && wish.message)
+      grid.replaceChildren(...wishes.map(card))
+    } catch (error) {
+      // The buttons below still lead to the guestbook
+      console.error('Could not load wishes:', error)
+    }
+  }
+
+  const section = document.getElementById('wishes')
+  const grid = section?.querySelector<HTMLElement>('[data-wishes-wall]')
+
+  if (section && grid && isConfigured) {
+    // Fetch only when the section is about to scroll into view. Observe the
+    // section: the empty grid is display:none and would never intersect.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        observer.disconnect()
+        load(grid)
+      },
+      { rootMargin: '600px 0px' }
+    )
+    observer.observe(section)
+  }
+</script>

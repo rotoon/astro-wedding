@@ -1,0 +1,51 @@
+---
+import { afterWedding, couple } from '../data/wedding'
+
+const videoId = afterWedding.highlightVideoId
+const title = `${couple.bride.nickname} & ${couple.groom.nickname} — Wedding Highlight`
+---
+
+{
+  videoId && (
+    <section class='video-section'>
+      <div class='section-decorative-line' />
+      <h2 class='section-title reveal-title'>Our Wedding Film</h2>
+      <div
+        class='video-frame reveal-item'
+        data-video-id={videoId}
+      >
+        <button
+          type='button'
+          class='video-play'
+          aria-label={`Play video: ${title}`}
+        >
+          <img
+            src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+            alt=''
+            loading='lazy'
+            decoding='async'
+          />
+          <span
+            class='video-play-icon'
+            aria-hidden='true'
+          />
+        </button>
+      </div>
+    </section>
+  )
+}
+
+<script>
+  // Lite embed: swap the thumbnail for the real player only when asked
+  document.querySelectorAll<HTMLElement>('.video-frame').forEach((frame) => {
+    frame.querySelector('.video-play')?.addEventListener('click', () => {
+      const iframe = document.createElement('iframe')
+      iframe.src = `https://www.youtube-nocookie.com/embed/${frame.dataset.videoId}?autoplay=1&rel=0&playsinline=1`
+      iframe.title = 'Wedding highlight video'
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'
+      iframe.allowFullscreen = true
+      frame.replaceChildren(iframe)
+      iframe.focus()
+    })
+  })
+</script>

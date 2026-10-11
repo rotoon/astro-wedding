@@ -1,0 +1,75 @@
+---
+import { ceremony } from '../data/wedding'
+import { timeTogether } from '../utils/anniversary'
+
+// Rendered at build time, then refreshed in the browser (see script below)
+const together = timeTogether(ceremony.start)
+const units = [
+  { id: 'years', label: 'Years', value: together.years },
+  { id: 'months', label: 'Months', value: together.months },
+  { id: 'days', label: 'Days', value: together.days },
+]
+---
+
+<!-- Time together since the wedding (replaces the countdown) -->
+<section class='countdown-section together-section'>
+  <div class='countdown-overlay'></div>
+  <div
+    class='countdown-content'
+    id='together'
+    data-since={ceremony.start}
+  >
+    <h2 class='countdown-title'>Together for</h2>
+    <div class='countdown-display'>
+      {
+        units.map((unit, index) => (
+          <>
+            {index > 0 && <div class='countdown-separator'>·</div>}
+            <div class='countdown-unit'>
+              <div
+                class='countdown-value'
+                data-unit={unit.id}
+              >
+                {unit.value}
+              </div>
+              <div class='countdown-label'>{unit.label}</div>
+            </div>
+          </>
+        ))
+      }
+    </div>
+    <p class='together-total'>
+      <span data-unit='totalDays'>{together.totalDays.toLocaleString('en-US')}</span> days and counting
+    </p>
+    <p
+      class='together-anniversary'
+      hidden={!together.isAnniversary}
+    >
+      Happy Anniversary ♥
+    </p>
+  </div>
+</section>
+
+<script>
+  import { timeTogether } from '../utils/anniversary'
+
+  const root = document.getElementById('together')
+
+  const render = () => {
+    if (!root?.dataset.since) return
+    const together = timeTogether(root.dataset.since)
+
+    root.querySelectorAll<HTMLElement>('[data-unit]').forEach((element) => {
+      const unit = element.dataset.unit as keyof typeof together
+      const value = together[unit]
+      if (typeof value === 'number') element.textContent = value.toLocaleString('en-US')
+    })
+
+    const anniversary = root.querySelector<HTMLElement>('.together-anniversary')
+    if (anniversary) anniversary.hidden = !together.isAnniversary
+  }
+
+  render()
+  // Keep it right if the page stays open past midnight
+  setInterval(render, 60 * 1000)
+</script>

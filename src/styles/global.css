@@ -17,7 +17,7 @@
   /* Font Settings */
   --heading-font: 'Bodoni Moda', 'DM Serif Display', 'Playfair Display', serif;
   --secondary-font: 'Cinzel', 'Cormorant Garamond', serif;
-  --body-font: 'Montserrat', sans-serif;
+  --body-font: 'Montserrat', 'Prompt', sans-serif; /* Prompt covers Thai */
 
   /* Animation Timing */
   --transition-fast: 0.3s;
@@ -425,13 +425,23 @@ button:focus-visible,
   animation: fadeUp 1.5s forwards 0.8s;
 }
 
+/* .hero-title animates in with this; it was referenced but never defined,
+   so the names and heading used to stay invisible */
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .heading-decorative {
   font-family: var(--body-font);
-  font-size: 0.8rem;
-  font-weight: 300;
-  letter-spacing: 0.2em;
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--gold-color);
+  color: #ecd6a8; /* lighter gold: readable on the pale sky */
+  text-shadow: 0 1px 8px rgba(48, 31, 18, 0.45);
   margin-bottom: 1rem;
   position: relative;
   display: inline-block;
@@ -1451,6 +1461,31 @@ button:focus-visible,
   letter-spacing: 0.05em;
 }
 
+/* Wide landscape screens: the hero photo is portrait, so a centered crop shows
+   only sky. Show the couple (left of centre), put the date over the sky on the
+   left and the names in the empty space on the right. */
+@media (min-width: 992px) and (min-aspect-ratio: 5/4) {
+  .hero-bg {
+    background-position: center 70%;
+  }
+
+  /* (higher specificity than the min-width: 992px `right: 10%` rule below) */
+  .parallax-content .hero-date {
+    right: auto;
+    left: 7%;
+  }
+
+  .parallax-content {
+    align-items: flex-end;
+    padding-right: 9vw;
+  }
+
+  .hero-title {
+    width: min(34vw, 480px);
+    text-shadow: 0 2px 18px rgba(48, 31, 18, 0.35);
+  }
+}
+
 /* ========= Responsive Design ========= */
 @media (max-width: 767px) {
   :root {
@@ -1458,15 +1493,21 @@ button:focus-visible,
   }
 
   .main-title {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
+    margin-bottom: 0;
+  }
+
+  /* Smaller, higher date so it clears the (centered) names on phones */
+  .hero-date {
+    top: 8%;
   }
 
   .date-line {
-    height: 60px;
+    height: 48px;
   }
 
   .date-line span {
-    font-size: 3rem;
+    font-size: 2.4rem;
   }
 
   .section-title {
@@ -1752,4 +1793,226 @@ button:focus-visible,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* --- Together for (time since the wedding) --- */
+.together-section {
+  height: auto;
+  min-height: 300px;
+  padding: 3.5rem var(--container-padding);
+}
+
+.together-total {
+  margin-top: 1.25rem;
+  font-family: var(--secondary-font);
+  font-size: 0.95rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--light-color);
+  opacity: 0.85;
+}
+
+.together-anniversary {
+  margin-top: 0.75rem;
+  font-family: var(--heading-font);
+  font-size: 1.4rem;
+  color: var(--gold-color);
+}
+
+.together-anniversary[hidden] {
+  display: none;
+}
+
+/* --- Thank-you note --- */
+.thank-you-message {
+  padding: 2rem 2rem 0;
+  text-align: center;
+  line-height: 1.8;
+  color: var(--text-dark);
+}
+
+.thank-you-message p + p {
+  margin-top: 1rem;
+}
+
+.thank-you-signature {
+  font-family: var(--heading-font);
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+@media (max-width: 767px) {
+  .thank-you-message {
+    padding: 1.5rem 1.25rem 0;
+  }
+}
+
+/* --- Highlight video --- */
+.video-section {
+  padding: var(--section-spacing) var(--container-padding);
+  text-align: center;
+  background-color: var(--light-color);
+}
+
+.video-frame {
+  position: relative;
+  max-width: 960px;
+  margin: 2rem auto 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  background-color: var(--dark-color);
+  box-shadow: 0 10px 30px rgba(48, 31, 18, 0.2);
+}
+
+.video-frame iframe,
+.video-play,
+.video-play img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-play img {
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.video-play:hover img {
+  transform: scale(1.03);
+}
+
+.video-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  border-radius: 50%;
+  background-color: rgba(48, 31, 18, 0.7);
+  border: 2px solid var(--gold-color);
+  transition: background-color var(--transition-fast) ease;
+}
+
+.video-play-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 54%;
+  transform: translate(-50%, -50%);
+  border-style: solid;
+  border-width: 14px 0 14px 22px;
+  border-color: transparent transparent transparent var(--light-color);
+}
+
+.video-play:hover .video-play-icon {
+  background-color: var(--primary-color);
+}
+
+/* --- Wishes wall (homepage preview of the guestbook) --- */
+.wishes-wall {
+  padding: var(--section-spacing) var(--container-padding);
+  text-align: center;
+  background-color: var(--light-color);
+}
+
+.wishes-wall-intro {
+  margin-bottom: 2rem;
+  color: var(--text-muted);
+}
+
+.wishes-wall-grid {
+  /* Masonry: cards of different heights stack without gaps */
+  columns: 3 280px;
+  column-gap: 1.25rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.wishes-wall-grid:empty {
+  display: none;
+}
+
+.wall-card {
+  display: flex;
+  flex-direction: column;
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid rgba(218, 202, 190, 0.6);
+  border-radius: var(--border-radius);
+  box-shadow: 0 6px 20px rgba(48, 31, 18, 0.06);
+  animation: wall-in 0.5s ease both;
+}
+
+.wall-card:nth-child(2) { animation-delay: 0.08s; }
+.wall-card:nth-child(3) { animation-delay: 0.16s; }
+.wall-card:nth-child(4) { animation-delay: 0.24s; }
+.wall-card:nth-child(5) { animation-delay: 0.32s; }
+.wall-card:nth-child(6) { animation-delay: 0.4s; }
+
+@keyframes wall-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.wall-photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background-color: var(--secondary-color); /* placeholder while loading */
+}
+
+.wall-message {
+  flex: 1;
+  padding: 1.1rem 1.1rem 0.5rem;
+  line-height: 1.7;
+  color: var(--text-dark);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wall-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.wall-name {
+  font-weight: 500;
+  color: var(--primary-color);
+  overflow-wrap: anywhere;
+}
+
+.wishes-wall-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 2.25rem;
+}
+
+.wishes-wall-link {
+  color: var(--primary-color);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+}
+
+.wishes-wall-link:hover {
+  color: var(--accent-color);
 }

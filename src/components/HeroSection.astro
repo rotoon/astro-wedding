@@ -1,5 +1,5 @@
 ---
-import { couple, dateParts } from '../data/wedding'
+import { afterWedding, couple, dateParts } from '../data/wedding'
 ---
 
 <div class='parallax-hero'>
@@ -20,7 +20,7 @@ import { couple, dateParts } from '../data/wedding'
       <div class='date-line'><span>{dateParts.year}</span></div>
     </div>
     <div class='hero-title'>
-      <div class='heading-decorative'>It's happening!</div>
+      <div class='heading-decorative'>{afterWedding.heroHeading}</div>
       <h1 class='main-title'>
         <span class='name-line-1'>{couple.bride.name}</span>
         <span class='name-separator'>&</span>

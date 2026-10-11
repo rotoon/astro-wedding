@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// Guestbook rules (deploy: npx firebase-tools deploy --only firestore:rules,storage)
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isText(value, minSize, maxSize) {
+      return value is string && value.size() >= minSize && value.size() <= maxSize;
+    }
+
+    match /wishes/{wishId} {
+      allow read: if true;
+
+      // Anyone can leave a wish; only these fields, sane sizes, server time
+      allow create: if
+        request.resource.data.keys().hasOnly(['name', 'message', 'photoURLs', 'reactions', 'createdAt']) &&
+        isText(request.resource.data.name, 1, 100) &&
+        isText(request.resource.data.message, 1, 2000) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.reactions == 0 &&
+        (request.resource.data.photoURLs == null ||
+          (request.resource.data.photoURLs is list &&
+           request.resource.data.photoURLs.size() >= 1 &&
+           request.resource.data.photoURLs.size() <= 5));
+
+      // Likes: only `reactions`, and only +1 at a time
+      allow update: if
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']) &&
+        request.resource.data.reactions == resource.data.reactions + 1;
+
+      allow delete: if false;
+    }
+
+    match /wishes_archive/{wishId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

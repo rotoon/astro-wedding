@@ -1,0 +1,22 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import AddWishForm from '../../features/wishes/components/AddWishForm'
+import { couple } from '../../data/wedding'
+import '../../features/wishes/wishes.css'
+---
+
+<Layout
+  title={`Write a wish | ${couple.title}`}
+  description={`Send your wishes, and photos, to ${couple.bride.nickname} & ${couple.groom.nickname}.`}
+>
+  <main class='wishes-page'>
+    <section class='wish-form-card'>
+      <h1 class='wishes-title small'>เขียนคำอวยพร</h1>
+      <p class='wishes-subtitle'>ข้อความของคุณจะแสดงในหน้าคำอวยพร</p>
+      <AddWishForm
+        client:only='react'
+        backHref='/wishes/'
+      />
+    </section>
+  </main>
+</Layout>
