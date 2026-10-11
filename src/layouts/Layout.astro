@@ -398,7 +398,6 @@ const eventSchema = {
               .play()
               .then(() => {
                 window.bgmStarted = true
-                console.log('BGM started successfully')
 
                 // เมื่อเพลงเริ่มเล่นแล้ว ลบ event listener ทั้งหมดออก
                 document.removeEventListener('click', onFirstInteraction)
@@ -407,7 +406,6 @@ const eventSchema = {
               })
               .catch((err) => {
                 // หากไม่สามารถเล่นเพลงได้ ปล่อยให้ event listener ยังทำงานต่อไป
-                console.log('Cannot play BGM yet, waiting for more interaction')
               })
           } catch (e) {
             // กรณีเกิด error ก็ปล่อยให้ event listener ยังทำงานต่อไป

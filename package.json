@@ -8,12 +8,12 @@
     "preview": "astro preview",
     "astro": "astro"
   },
-  "dependencies": {
-    "astro": "^5.7.12",
-    "swiper": "^14.3.0"
+  "engines": {
+    "node": ">=22.12.0"
   },
-  "devDependencies": {
-    "terser": "^5.39.0"
+  "dependencies": {
+    "astro": "^7.3.8",
+    "swiper": "^14.3.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

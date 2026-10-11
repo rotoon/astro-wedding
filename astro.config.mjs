@@ -5,7 +5,8 @@ import { defineConfig } from 'astro/config'
 export default defineConfig({
   site: 'https://www.ststarttogether.com',
 
-  // Enable compression for better performance
+  // HTML-aware whitespace compression (Astro 7's default is 'jsx', which drops
+  // spaces between inline elements)
   compressHTML: true,
 
   build: {
@@ -17,33 +18,6 @@ export default defineConfig({
   },
 
   vite: {
-    build: {
-      // Use CSS code splitting - reduces main payload size
-      cssCodeSplit: true,
-
-      // Minimize JS for better performance
-      minify: 'terser',
-
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            // Bundle swiper separately so it can be cached on its own
-            swiper: ['swiper'],
-          },
-        },
-      },
-
-      // Terser options for better minification
-      terserOptions: {
-        compress: {
-          // Remove console logs in production
-          drop_console: true,
-          // Aggressive optimizations
-          passes: 2,
-        },
-      },
-    },
-
     css: {
       // Enable sourcemaps for development
       devSourcemap: true,
