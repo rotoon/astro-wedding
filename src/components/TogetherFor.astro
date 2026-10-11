@@ -51,25 +51,82 @@ const units = [
 </section>
 
 <script>
-  import { timeTogether } from '../utils/anniversary'
+  import { timeTogether, type Together } from '../utils/anniversary'
+  import { onIntroDone } from '../scripts/intro'
+
+  const COUNT_UP_MS = 1500
+  const PETALS_SEEN_KEY = 'anniversaryPetals'
 
   const root = document.getElementById('together')
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // ?anniversary previews the anniversary-day look on any day
+  const previewAnniversary = new URLSearchParams(location.search).has('anniversary')
+
+  const units = () => root?.querySelectorAll<HTMLElement>('[data-unit]') ?? []
+
+  const show = (together: Together, progress = 1) => {
+    units().forEach((element) => {
+      const value = together[element.dataset.unit as keyof Together]
+      if (typeof value === 'number') {
+        element.textContent = Math.round(value * progress).toLocaleString('en-US')
+      }
+    })
+  }
+
+  const current = () => timeTogether(root?.dataset.since ?? '')
 
   const render = () => {
     if (!root?.dataset.since) return
-    const together = timeTogether(root.dataset.since)
-
-    root.querySelectorAll<HTMLElement>('[data-unit]').forEach((element) => {
-      const unit = element.dataset.unit as keyof typeof together
-      const value = together[unit]
-      if (typeof value === 'number') element.textContent = value.toLocaleString('en-US')
-    })
+    const together = current()
+    show(together)
 
     const anniversary = root.querySelector<HTMLElement>('.together-anniversary')
-    if (anniversary) anniversary.hidden = !together.isAnniversary
+    if (anniversary) anniversary.hidden = !(together.isAnniversary || previewAnniversary)
+  }
+
+  // Numbers run up from 0 the first time the section scrolls into view
+  const countUp = () => {
+    const together = current()
+    const start = performance.now()
+    const easeOut = (t: number) => 1 - (1 - t) ** 3
+
+    const frame = (now: number) => {
+      const t = Math.min(1, (now - start) / COUNT_UP_MS)
+      show(together, easeOut(t))
+      if (t < 1) requestAnimationFrame(frame)
+    }
+    requestAnimationFrame(frame)
+  }
+
+  // Petals once per visit on the wedding anniversary (25 May, Thai time)
+  const maybePetals = () => {
+    if (prefersReducedMotion) return
+    if (!current().isAnniversary && !previewAnniversary) return
+    try {
+      if (!previewAnniversary && sessionStorage.getItem(PETALS_SEEN_KEY)) return
+      sessionStorage.setItem(PETALS_SEEN_KEY, '1')
+    } catch {
+      // storage blocked: show them anyway
+    }
+    import('../scripts/petals').then(({ petals }) => petals())
   }
 
   render()
   // Keep it right if the page stays open past midnight
   setInterval(render, 60 * 1000)
+
+  if (root && !prefersReducedMotion && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        observer.disconnect()
+        countUp()
+      },
+      { threshold: 0.5 }
+    )
+    // Wait for the loading screen, so the count runs where the guest can see it
+    onIntroDone(() => observer.observe(root))
+  }
+
+  onIntroDone(maybePetals)
 </script>
