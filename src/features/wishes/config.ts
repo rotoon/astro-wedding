@@ -25,5 +25,19 @@ export const firebaseConfig = {
 
 export const emulatorHost = import.meta.env.PUBLIC_FIREBASE_EMULATOR_HOST
 
+/**
+ * The Firestore rules don't check photo URLs, so only show photos from our own
+ * Storage: a crafted "javascript:" or third-party URL never reaches the page
+ */
+export const isStoragePhotoURL = (url: string) => {
+  try {
+    const { protocol, host } = new URL(url)
+    if (emulatorHost) return host === `${emulatorHost}:9199`
+    return protocol === 'https:' && host === 'firebasestorage.googleapis.com'
+  } catch {
+    return false
+  }
+}
+
 /** True when the site was built with a Firebase project configured */
 export const isConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
