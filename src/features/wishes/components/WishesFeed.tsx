@@ -25,6 +25,63 @@ const useColumnCount = () => {
   return columns
 }
 
+const SKELETON_CARDS = 6
+
+/** Grey placeholder in the shape of a wish card, shown while wishes load */
+function SkeletonCard({ withPhoto }: { withPhoto: boolean }) {
+  return (
+    <div
+      className='wish-card wish-skeleton'
+      aria-hidden='true'
+    >
+      <div className='wish-header'>
+        <span className='skeleton-block skeleton-avatar' />
+        <div className='skeleton-lines'>
+          <span className='skeleton-block skeleton-name' />
+          <span className='skeleton-block skeleton-date' />
+        </div>
+      </div>
+      <span className='skeleton-block' />
+      <span className='skeleton-block skeleton-short' />
+      {withPhoto && <span className='skeleton-block skeleton-photo' />}
+    </div>
+  )
+}
+
+/** Placeholder cards laid out in the same columns as the feed */
+function Skeletons({ columns, count, label }: { columns: number; count: number; label: string }) {
+  return (
+    <>
+      <p
+        className='visually-hidden'
+        role='status'
+      >
+        {label}
+      </p>
+      <div
+        className='wishes-list'
+        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+      >
+        {Array.from({ length: columns }, (_, column) => (
+          <div
+            className='wishes-column'
+            key={column}
+          >
+            {Array.from({ length: count }, (_, index) => index)
+              .filter((index) => index % columns === column)
+              .map((index) => (
+                <SkeletonCard
+                  key={index}
+                  withPhoto={index % 2 === 0}
+                />
+              ))}
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
 function Feed() {
   const columnCount = useColumnCount()
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -48,12 +105,11 @@ function Feed() {
 
   if (isPending) {
     return (
-      <p
-        className='wishes-status'
-        role='status'
-      >
-        <span className='wishes-spinner' /> กำลังโหลดคำอวยพร...
-      </p>
+      <Skeletons
+        columns={columnCount}
+        count={SKELETON_CARDS}
+        label='กำลังโหลดคำอวยพร...'
+      />
     )
   }
 
@@ -96,12 +152,13 @@ function Feed() {
         aria-hidden='true'
       />
       {isFetchingNextPage && (
-        <p
-          className='wishes-status'
-          role='status'
-        >
-          <span className='wishes-spinner' /> กำลังโหลดเพิ่มเติม...
-        </p>
+        <div className='wishes-more'>
+          <Skeletons
+            columns={columnCount}
+            count={columnCount}
+            label='กำลังโหลดเพิ่มเติม...'
+          />
+        </div>
       )}
       {!hasNextPage && <p className='wishes-status small'>คุณดูคำอวยพรครบทั้งหมดแล้ว ♥</p>}
     </>

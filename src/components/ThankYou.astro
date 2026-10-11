@@ -7,12 +7,12 @@ const { thankYou } = afterWedding
 <!-- Thank-you note from the couple, with a recap of the day -->
 <section class='details-section'>
   <div class='details-container'>
+    <div class='details-heading'>
+      <div class='section-decorative-line'></div>
+      <h2 class='section-title reveal-title'>{thankYou.title}</h2>
+      <p class='details-date reveal-item'>{dateDisplay.full}</p>
+    </div>
     <div class='details-card'>
-      <div class='details-header'>
-        <div class='details-ornament'></div>
-        <h2 class='details-title reveal-title'>{thankYou.title}</h2>
-        <div class='details-date'>{dateDisplay.full}</div>
-      </div>
 
       <div class='thank-you-message reveal-item'>
         {thankYou.message.map((paragraph) => <p>{paragraph}</p>)}
@@ -72,6 +72,4 @@ const { thankYou } = afterWedding
       </div>
     </div>
   </div>
-  <div class='accent-shape shape-3'></div>
-  <div class='accent-shape shape-4'></div>
 </section>

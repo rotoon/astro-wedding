@@ -12,10 +12,11 @@
 
   /* Text Colors */
   --text-dark: #372517;
-  --text-muted: #a99385;
+  --text-muted: #7e6859; /* 4.6:1 on the cream background (WCAG AA) */
+  --accent-text: #8c6448; /* milk tea, dark enough for small text */
 
   /* Font Settings */
-  --heading-font: 'Bodoni Moda', 'DM Serif Display', 'Playfair Display', serif;
+  --heading-font: 'Bodoni Moda', 'DM Serif Display', serif;
   --secondary-font: 'Cinzel', 'Cormorant Garamond', serif;
   --body-font: 'Montserrat', 'Prompt', sans-serif; /* Prompt covers Thai */
 
@@ -479,22 +480,13 @@ button:focus-visible,
 .scroll-arrow {
   width: 24px;
   height: 24px;
-  animation: bounce 2s infinite;
+  /* A slow drift, not a bounce: a hint to scroll that doesn't nag */
+  animation: arrow-drift 2.4s ease-in-out infinite alternate;
 }
 
-@keyframes bounce {
-  0%,
-  20%,
-  50%,
-  80%,
-  100% {
-    transform: translateY(0) var(--transform-gpu);
-  }
-  40% {
-    transform: translateY(-10px) var(--transform-gpu);
-  }
-  60% {
-    transform: translateY(-5px) var(--transform-gpu);
+@keyframes arrow-drift {
+  to {
+    transform: translateY(5px) var(--transform-gpu);
   }
 }
 
@@ -593,7 +585,7 @@ button:focus-visible,
 }
 
 .bio-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -606,13 +598,6 @@ button:focus-visible,
   background-position: center top;
   border: 3px solid var(--light-color);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  /* Animation properties */
-  transform: scale(0.9);
-  transition: transform var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.bio-card:hover .bio-photo {
-  transform: scale(1);
 }
 
 .bio-info {
@@ -638,7 +623,7 @@ button:focus-visible,
 .bio-birthday {
   font-family: var(--secondary-font);
   font-size: 0.9rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 0.8rem;
 }
 
@@ -655,9 +640,8 @@ button:focus-visible,
 }
 
 .bio-heart {
-  color: var(--brick-color);
+  color: var(--accent-color);
   font-size: 2rem;
-  animation: heartbeat 1.5s infinite;
   /* Animation properties */
   opacity: 0;
   transform: scale(0.5);
@@ -669,23 +653,13 @@ button:focus-visible,
   transform: scale(1);
 }
 
-@keyframes heartbeat {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.15);
-  }
-}
-
 @media (max-width: 767px) {
   .bio-cards {
     flex-direction: column;
   }
 }
 
-/* --- Shared decorations (section lines, flourishes, accent shapes) --- */
+/* --- Shared decorations (section lines) --- */
 .section-decorative-line {
   width: 100px;
   height: 3px;
@@ -698,62 +672,6 @@ button:focus-visible,
   margin: 0 auto 3rem;
 }
 
-.decorative-flourish {
-  position: absolute;
-  left: 0;
-  bottom: -10px;
-  width: 100%;
-  height: 20px;
-  opacity: 0.5;
-}
-
-.decorative-flourish svg {
-  width: 100%;
-  height: 100%;
-}
-
-.decorative-flourish path {
-  stroke: var(--accent-color);
-  stroke-width: 1px;
-  fill: none;
-}
-
-.accent-shape {
-  position: absolute;
-  background: var(--secondary-color);
-  opacity: 0.15;
-  border-radius: 50%;
-  z-index: -1;
-}
-
-.shape-1 {
-  width: 250px;
-  height: 250px;
-  top: -50px;
-  left: -100px;
-}
-
-.shape-2 {
-  width: 180px;
-  height: 180px;
-  bottom: -50px;
-  right: -80px;
-}
-
-.shape-3 {
-  width: 220px;
-  height: 220px;
-  top: -80px;
-  right: -100px;
-}
-
-.shape-4 {
-  width: 200px;
-  height: 200px;
-  bottom: -80px;
-  left: -80px;
-}
-
 /* --- Photo Gallery --- */
 .gallery-section {
   padding: calc(var(--section-spacing) * 0.8) var(--container-padding);
@@ -762,45 +680,9 @@ button:focus-visible,
   contain: content;
 }
 
-.gallery-title-container {
+.gallery-heading {
   text-align: center;
-  margin-bottom: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gallery-ornament {
-  width: 80px;
-  height: 1px;
-  background-color: var(--gold-color);
-  position: relative;
-}
-
-.gallery-ornament::before {
-  content: '';
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: var(--gold-color);
-  top: -2px;
-}
-
-.gallery-ornament.left {
-  margin-right: 1.5rem;
-}
-
-.gallery-ornament.right {
-  margin-left: 1.5rem;
-}
-
-.gallery-ornament.left::before {
-  right: 0;
-}
-
-.gallery-ornament.right::before {
-  left: 0;
+  margin-bottom: 1.5rem;
 }
 
 .gallery-title {
@@ -843,10 +725,13 @@ button:focus-visible,
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
 }
 
-.gallery-image:hover {
-  transform: translateY(-5px) var(--transform-gpu) scale(1.05);
+/* Hover, site-wide: photos zoom in slightly inside their frame; buttons and
+   cards lift by 2px */
+.gallery-image:hover img {
+  transform: scale(1.03);
 }
 
 .gallery-image::after {
@@ -866,6 +751,8 @@ button:focus-visible,
   --swiper-navigation-color: var(--dark-color);
   --swiper-pagination-bullet-inactive-color: var(--light-color);
   --swiper-pagination-bullet-inactive-opacity: 0.5;
+  --swiper-pagination-bullet-size: 10px;
+  --swiper-pagination-bottom: 0px;
 }
 
 .gallery-controls {
@@ -905,7 +792,7 @@ button:focus-visible,
 .swiper-button-prev:hover,
 .swiper-button-next:hover {
   background-color: var(--gold-color);
-  transform: scale(1.1);
+  transform: translateY(-2px);
 }
 
 .swiper-button-prev::after,
@@ -914,22 +801,12 @@ button:focus-visible,
   font-weight: bold;
 }
 
-.swiper-pagination {
+/* In the flow under the slides. The prefix outranks Swiper's absolute
+   positioning whichever stylesheet loads last (the dev server and the build
+   order them differently); colours and sizes come from the variables above. */
+.gallery-section .swiper-pagination {
   position: relative;
   margin-top: 15px;
-  bottom: 10px;
-}
-
-.swiper-pagination-bullet {
-  width: 10px;
-  height: 10px;
-  background-color: var(--light-color);
-  opacity: 0.5;
-}
-
-.swiper-pagination-bullet-active {
-  background-color: var(--gold-color);
-  opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -937,16 +814,14 @@ button:focus-visible,
     height: 500px;
   }
 
-  .swiper-pagination-bullet {
-    width: 12px;
-    height: 12px;
-    margin: 0 5px;
+  .gallery-section {
+    --swiper-pagination-bullet-size: 12px;
+    --swiper-pagination-bullet-horizontal-gap: 5px;
   }
 
   /* Arrows sit over the slides at the edges. The .gallery-section prefix gives
      these rules priority over Swiper's own navigation styles. */
   .gallery-section .swiper-pagination {
-    bottom: 0;
     margin-top: 20px;
     padding-bottom: 15px;
   }
@@ -1031,13 +906,12 @@ button:focus-visible,
 }
 
 .mosaic-item.hover {
-  transform: translateY(-5px) translateZ(0);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   z-index: 1;
 }
 
 .mosaic-item.hover .mosaic-image {
-  transform: scale(1.05) translateZ(0);
+  transform: scale(1.03) translateZ(0);
 }
 
 .mosaic-image {
@@ -1182,6 +1056,18 @@ button:focus-visible,
   margin: 0 auto;
 }
 
+.details-heading {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.details-date {
+  margin-top: -0.75rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
 .details-card {
   background-color: white;
   border-radius: var(--border-radius);
@@ -1191,37 +1077,6 @@ button:focus-visible,
   transform: var(--transform-gpu);
   will-change: transform;
   contain: layout style paint;
-}
-
-.details-header {
-  padding: 3rem 2rem 2rem;
-  text-align: center;
-  background-color: var(--primary-color);
-  color: var(--light-color);
-  position: relative;
-}
-
-.details-ornament {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 30px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30"><path d="M30,5 C40,25 60,25 60,5 M0,5 C0,25 20,25 30,5" stroke="%23D9BA7F" fill="none" stroke-width="1.5"/></svg>');
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.details-title {
-  margin-bottom: 0.5rem;
-}
-
-.details-date {
-  font-family: var(--body-font);
-  font-size: 1rem;
-  letter-spacing: 0.05em;
-  font-weight: 300;
 }
 
 .details-grid {
@@ -1670,7 +1525,6 @@ button:focus-visible,
 .image-modal-nav:hover,
 .image-modal-nav:focus {
   background-color: rgba(0, 0, 0, 0.8);
-  transform: translateY(-50%) scale(1.1);
   border-color: white;
 }
 
@@ -1689,7 +1543,6 @@ button:focus-visible,
 }
 
 .image-modal-nav:disabled:hover {
-  transform: translateY(-50%) scale(1);
   background-color: rgba(0, 0, 0, 0.3);
   border-color: transparent;
 }
@@ -1895,7 +1748,7 @@ button:focus-visible,
   font-weight: 400;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 /* Guest photos: one row that runs by itself (.is-moving) and pauses under the
@@ -1969,7 +1822,7 @@ button:focus-visible,
 }
 
 .guest-photo:hover img {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
 .guest-photo-name {
@@ -2055,7 +1908,7 @@ button:focus-visible,
 
 .wall-likes {
   flex-shrink: 0;
-  color: var(--brick-color);
+  color: var(--primary-color);
 }
 
 .wall-name {
@@ -2080,5 +1933,5 @@ button:focus-visible,
 }
 
 .wishes-wall-link:hover {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
