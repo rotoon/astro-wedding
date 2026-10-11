@@ -440,9 +440,9 @@ const eventSchema = {
                 console.log('BGM started successfully')
 
                 // เมื่อเพลงเริ่มเล่นแล้ว ลบ event listener ทั้งหมดออก
-                document.removeEventListener('click', playBGM)
-                document.removeEventListener('touchend', playBGM)
-                document.removeEventListener('keydown', playBGM)
+                document.removeEventListener('click', onFirstInteraction)
+                document.removeEventListener('touchend', onFirstInteraction)
+                document.removeEventListener('keydown', onFirstInteraction)
               })
               .catch((err) => {
                 // หากไม่สามารถเล่นเพลงได้ ปล่อยให้ event listener ยังทำงานต่อไป
@@ -455,9 +455,18 @@ const eventSchema = {
 
         // ฟังเฉพาะ event ที่เบราว์เซอร์นับเป็นการโต้ตอบของผู้ใช้ (อนุญาตให้เล่นเสียงได้)
         // scroll และ touchstart ไม่นับ จึงไม่ใช้ เพื่อไม่ให้โหลดไฟล์ทั้งที่ยังเล่นไม่ได้
-        document.addEventListener('click', playBGM)
-        document.addEventListener('touchend', playBGM)
-        document.addEventListener('keydown', playBGM)
+        const onFirstInteraction = function (e) {
+          // การแตะปุ่มเปิด/ปิดเสียงให้ toggleBGM จัดการเอง
+          // ไม่อย่างนั้น touchend จะเริ่มเพลงก่อน แล้ว click บนปุ่มจะสลับเป็นปิดเสียงทันที
+          if (e.target instanceof Element && e.target.closest('#audio-toggle')) {
+            return
+          }
+          playBGM()
+        }
+
+        document.addEventListener('click', onFirstInteraction)
+        document.addEventListener('touchend', onFirstInteraction)
+        document.addEventListener('keydown', onFirstInteraction)
 
         // เปิดให้ component อื่นๆ เข้าถึงตัวเล่นเพลงได้
         window.getBGM = function () {
@@ -466,6 +475,13 @@ const eventSchema = {
 
         // ฟังก์ชันสำหรับเปิด/ปิดเพลง
         window.toggleBGM = function (mute) {
+          // ถ้าเพลงยังไม่เคยเริ่ม การกดปุ่มครั้งแรกหมายถึง "เปิดเพลง" ไม่ใช่สลับเป็นปิดเสียง
+          if (typeof mute !== 'boolean' && !window.bgmStarted && bgmGlobal.paused) {
+            bgmGlobal.muted = false
+            playBGM()
+            return true
+          }
+
           if (typeof mute === 'boolean') {
             bgmGlobal.muted = mute
           } else {
