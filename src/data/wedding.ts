@@ -113,5 +113,5 @@ export const afterWedding = {
    * YouTube id of the highlight film (the part after `v=` or `youtu.be/`).
    * Leave empty to hide the video section.
    */
-  highlightVideoId: '',
+  highlightVideoId: 'xKU4cAmpGvI',
 } as const

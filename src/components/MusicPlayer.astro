@@ -99,17 +99,20 @@
   function onFirstInteraction(event: Event) {
     // The toggle button handles its own presses. Otherwise touchend would start
     // the music and the following click on the button would mute it right away.
-    if (event.target instanceof Element && event.target.closest('#audio-toggle')) {
+    // Starting the wedding film shouldn't start the music either.
+    if (event.target instanceof Element && event.target.closest('#audio-toggle, .video-play')) {
       return
     }
     play()
   }
 
   const toggle = () => {
-    // Before playback has ever started, a press means "turn the music on"
-    if (!started && bgm.paused) {
+    // Paused (not started yet, or stopped for the wedding film): a press means
+    // "turn the music on"
+    if (bgm.paused) {
       bgm.muted = false
-      play()
+      if (started) bgm.play().catch(() => {})
+      else play()
     } else {
       bgm.muted = !bgm.muted
     }
