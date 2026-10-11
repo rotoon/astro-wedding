@@ -9,6 +9,8 @@ is plain JS and CSS.
 
 ## Commands
 
+Requires Node.js 22.12 or newer (even-numbered releases), as declared in `package.json` `engines`.
+
 | Command        | Action                                        |
 | :------------- | :-------------------------------------------- |
 | `pnpm install` | Install dependencies                          |
