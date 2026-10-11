@@ -19,12 +19,40 @@ const {
 
 // Wedding details for structured data
 const weddingDate = '2025-05-25T08:39:00+07:00'
-const weddingLocation =
-  'Wedding Venues at Virgin Ville Sanpatong Chiangmai, 194/5 หมู่6 ตำบล ยุหว่า อำเภอสันป่าตอง เชียงใหม่ 50120 ไทย'
 const coupleNames = 'Suchanya & Nuttapon'
 
-// Determine the OpenGraph image URL - use dynamic endpoint if specified
 const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
+
+// Event structured data - serialized with JSON.stringify so values are escaped
+const eventSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: `Wedding of ${coupleNames}`,
+  startDate: weddingDate,
+  endDate: '2025-05-25T15:00:00+07:00',
+  location: {
+    '@type': 'Place',
+    name: 'Wedding Venues at Virgin Ville Sanpatong Chiangmai',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '194/5 หมู่6 ตำบล ยุหว่า',
+      addressLocality: 'อำเภอสันป่าตอง',
+      addressRegion: 'เชียงใหม่',
+      postalCode: '50120',
+      addressCountry: 'TH',
+    },
+  },
+  image: [
+    ogImageUrl,
+    new URL('/img/hero.webp', canonicalURL).href,
+    new URL('/img/bride.webp', canonicalURL).href,
+  ],
+  description: 'SOM & TOON START TOGETHER 25-05-2025',
+  organizer: {
+    '@type': 'Person',
+    name: coupleNames,
+  },
+}
 ---
 
 <!doctype html>
@@ -37,7 +65,7 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
     />
     <link
       rel='icon'
-      type='image/svg+xml'
+      type='image/x-icon'
       href='/favicon.ico'
     />
 
@@ -99,7 +127,7 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
     />
     <meta
       property='og:image:height'
-      content='630'
+      content='600'
     />
     <meta
       property='og:image:alt'
@@ -191,37 +219,10 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
     />
 
     <!-- Event Structured Data for SEO -->
-    <script type='application/ld+json'>
-      {
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "Wedding of Suchanya & Nuttapon",
-        "startDate": "${weddingDate}",
-        "endDate": "2025-05-25T15:00:00+07:00",
-        "location": {
-          "@type": "Place",
-          "name": "Wedding Venues at Virgin Ville Sanpatong Chiangmai",
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "194/5 หมู่6 ตำบล ยุหว่า",
-            "addressLocality": "อำเภอสันป่าตอง",
-            "addressRegion": "เชียงใหม่",
-            "postalCode": "50120",
-            "addressCountry": "TH"
-          }
-        },
-        "image": [
-          "${ogImageUrl}",
-          "${new URL('/img/hero.webp', Astro.url.origin).href}",
-          "${new URL('/img/bride.webp', Astro.url.origin).href}"
-        ],
-        "description": "SOM & TOON START TOGETHER 25-05-2025",
-        "organizer": {
-          "@type": "Person",
-          "name": "Suchanya & Nuttapon"
-        }
-      }
-    </script>
+    <script
+      type='application/ld+json'
+      set:html={JSON.stringify(eventSchema)}
+    />
 
     <!-- Resource hints for better performance -->
     <link
@@ -233,13 +234,13 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
       href='https://fonts.gstatic.com'
       crossorigin
     />
+
+    <!-- Hero image is the first thing guests see; fetch it before the CSS asks for it -->
     <link
-      rel='preconnect'
-      href='https://cdnjs.cloudflare.com'
-    />
-    <link
-      rel='preconnect'
-      href='https://unpkg.com'
+      rel='preload'
+      as='image'
+      href='/img/hero.webp'
+      fetchpriority='high'
     />
 
     <!-- Critical CSS for faster rendering -->
@@ -301,45 +302,9 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
       />
     </noscript>
 
-    <!-- Optimized CSS loading -->
-    <link
-      rel='stylesheet'
-      href='https://unpkg.com/swiper/swiper-bundle.min.css'
-      media='print'
-      onload="this.media='all'"
-    />
 
-    <!-- Load utility functions inline to ensure they're available -->
+    <!-- Scroll reveal for .reveal-title / .reveal-text / .reveal-item (single observer for the page) -->
     <script is:inline>
-      // Utility functions for performance optimization
-
-      // Get element utility function - DOM element selection
-      window.getElement = function (selector) {
-        if (typeof selector === 'string') {
-          return document.querySelector(selector)
-        }
-        return selector
-      }
-
-      // Get elements - returns an array for multiple elements
-      window.getElements = function (selector) {
-        return Array.from(document.querySelectorAll(selector))
-      }
-
-      // Optimized throttle function for performance
-      window.throttle = function (func, limit) {
-        let inThrottle
-        return function () {
-          const args = arguments
-          const context = this
-          if (!inThrottle) {
-            func.apply(context, args)
-            inThrottle = true
-            setTimeout(() => (inThrottle = false), limit)
-          }
-        }
-      }
-
       // Setup animation observer for reveal effects
       document.addEventListener('DOMContentLoaded', function () {
         // Setup animation reveal elements
@@ -405,8 +370,10 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
     <script is:inline>
       // เพิ่มฟังก์ชันที่จะพยายามเล่นเพลงทันทีที่มีการโต้ตอบแรกกับเว็บไซต์
       document.addEventListener('DOMContentLoaded', function () {
-        // สร้าง Audio element โดยตรงในระดับสูง
-        const bgmGlobal = new Audio('/bgm/bgm.MP3')
+        // สร้าง Audio element โดยยังไม่ใส่ src เพื่อไม่ให้โหลดไฟล์เพลงตอนเปิดหน้า
+        // ไฟล์จะเริ่มโหลดเมื่อแขกแตะหน้าจอครั้งแรกใน playBGM
+        const bgmGlobal = new Audio()
+        bgmGlobal.preload = 'none'
         bgmGlobal.id = 'bgm-global'
         bgmGlobal.loop = true
         bgmGlobal.volume = 0.6
@@ -422,6 +389,10 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
         const playBGM = function () {
           if (window.bgmStarted) return
 
+          if (!bgmGlobal.getAttribute('src')) {
+            bgmGlobal.src = '/bgm/bgm.MP3'
+          }
+
           try {
             bgmGlobal
               .play()
@@ -430,10 +401,9 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
                 console.log('BGM started successfully')
 
                 // เมื่อเพลงเริ่มเล่นแล้ว ลบ event listener ทั้งหมดออก
-                document.removeEventListener('click', playBGM)
-                document.removeEventListener('touchstart', playBGM)
-                document.removeEventListener('keydown', playBGM)
-                document.removeEventListener('scroll', playBGM)
+                document.removeEventListener('click', onFirstInteraction)
+                document.removeEventListener('touchend', onFirstInteraction)
+                document.removeEventListener('keydown', onFirstInteraction)
               })
               .catch((err) => {
                 // หากไม่สามารถเล่นเพลงได้ ปล่อยให้ event listener ยังทำงานต่อไป
@@ -444,11 +414,20 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
           }
         }
 
-        // เพิ่ม event listener สำหรับทุกการโต้ตอบกับเว็บไซต์
-        document.addEventListener('click', playBGM)
-        document.addEventListener('touchstart', playBGM)
-        document.addEventListener('keydown', playBGM)
-        document.addEventListener('scroll', playBGM)
+        // ฟังเฉพาะ event ที่เบราว์เซอร์นับเป็นการโต้ตอบของผู้ใช้ (อนุญาตให้เล่นเสียงได้)
+        // scroll และ touchstart ไม่นับ จึงไม่ใช้ เพื่อไม่ให้โหลดไฟล์ทั้งที่ยังเล่นไม่ได้
+        const onFirstInteraction = function (e) {
+          // การแตะปุ่มเปิด/ปิดเสียงให้ toggleBGM จัดการเอง
+          // ไม่อย่างนั้น touchend จะเริ่มเพลงก่อน แล้ว click บนปุ่มจะสลับเป็นปิดเสียงทันที
+          if (e.target instanceof Element && e.target.closest('#audio-toggle')) {
+            return
+          }
+          playBGM()
+        }
+
+        document.addEventListener('click', onFirstInteraction)
+        document.addEventListener('touchend', onFirstInteraction)
+        document.addEventListener('keydown', onFirstInteraction)
 
         // เปิดให้ component อื่นๆ เข้าถึงตัวเล่นเพลงได้
         window.getBGM = function () {
@@ -457,6 +436,13 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
 
         // ฟังก์ชันสำหรับเปิด/ปิดเพลง
         window.toggleBGM = function (mute) {
+          // ถ้าเพลงยังไม่เคยเริ่ม การกดปุ่มครั้งแรกหมายถึง "เปิดเพลง" ไม่ใช่สลับเป็นปิดเสียง
+          if (typeof mute !== 'boolean' && !window.bgmStarted && bgmGlobal.paused) {
+            bgmGlobal.muted = false
+            playBGM()
+            return true
+          }
+
           if (typeof mute === 'boolean') {
             bgmGlobal.muted = mute
           } else {
@@ -472,24 +458,6 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
         }
       })
     </script>
-
-    <!-- Consolidated GSAP scripts -->
-    <script
-      is:inline
-      defer
-      src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js'
-    ></script>
-    <script
-      is:inline
-      defer
-      src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js'
-    ></script>
-    <!-- Swiper.js for sliders -->
-    <script
-      is:inline
-      defer
-      src='https://unpkg.com/swiper/swiper-bundle.min.js'
-    ></script>
   </head>
   <body>
     <div class='noise-overlay'></div>

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 
-export const get: APIRoute = async function get({ site }) {
+export const GET: APIRoute = async function GET({ site }) {
   if (!site) {
     return new Response(
       'Site configuration is required to generate the sitemap',
@@ -10,11 +10,8 @@ export const get: APIRoute = async function get({ site }) {
     )
   }
 
-  // Replace with your actual domain when in production
-  const siteUrl = site.toString()
-
   // Generate the XML sitemap with the content type header
-  return new Response(generateSitemap(siteUrl), {
+  return new Response(generateSitemap(site), {
     status: 200,
     headers: {
       'Content-Type': 'application/xml',
@@ -23,7 +20,7 @@ export const get: APIRoute = async function get({ site }) {
   })
 }
 
-function generateSitemap(siteUrl: string) {
+function generateSitemap(site: URL) {
   // Define your site's URLs and their metadata
   const pages = [
     {
@@ -42,7 +39,7 @@ function generateSitemap(siteUrl: string) {
   pages.forEach((page) => {
     xml += `
   <url>
-    <loc>${siteUrl}${page.url}</loc>
+    <loc>${new URL(page.url, site).href}</loc>
     <lastmod>${page.lastMod}</lastmod>
     <priority>${page.priority}</priority>
     <changefreq>${page.changeFreq}</changefreq>

@@ -50,9 +50,12 @@
   const parallaxElements =
     document.querySelectorAll<HTMLElement>('.parallax-layer')
   const viewportHeight = window.innerHeight
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches
 
-  // Use RAF-based throttling for smoother animations
-  const updateParallax = () => {
+  // RAF-based throttling: at most one transform update per frame
+  const updateParallax = throttle(() => {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop
 
     if (scrollTop <= viewportHeight) {
@@ -66,22 +69,15 @@
         } else {
           element.style.transform = `translateY(${yPos}px)`
         }
-        if (element.classList.contains('hero-title')) {
-          element.classList.add('visible')
-        }
       })
     }
-  }
-
-  // Add event listener with passive option for better performance
-  window.addEventListener('scroll', updateParallax, { passive: true })
-
-  // Initial update
-  updateParallax()
-
-  // Clean up on page unload
-  document.addEventListener('astro:before-swap', () => {
-    window.removeEventListener('scroll', updateParallax)
-    ;(updateParallax as any).cancel?.()
   })
+
+  if (!prefersReducedMotion) {
+    // Add event listener with passive option for better performance
+    window.addEventListener('scroll', updateParallax, { passive: true })
+
+    // Initial update
+    updateParallax()
+  }
 </script>

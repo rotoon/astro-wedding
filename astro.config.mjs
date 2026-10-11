@@ -1,22 +1,21 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
-// import imagemin from 'vite-plugin-imagemin' - disabled due to image processing errors
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://www.ststarttogether.com',
+
   // Enable compression for better performance
   compressHTML: true,
 
-  // Build options for optimization
   build: {
-    // Use better asset optimization
+    // Inline small stylesheets, link the rest
     inlineStylesheets: 'auto',
 
-    // Create image srcsets automatically during build - should be string value
+    // Output folder for bundled JS/CSS
     assets: 'assets',
   },
 
-  // Minimize JS payload size
   vite: {
     build: {
       // Use CSS code splitting - reduces main payload size
@@ -25,21 +24,14 @@ export default defineConfig({
       // Minimize JS for better performance
       minify: 'terser',
 
-      // Optimize JS bundle size
       rollupOptions: {
         output: {
           manualChunks: {
-            // Bundle all GSAP related code together
-            gsap: ['gsap', 'gsap/ScrollTrigger'],
-
-            // Bundle swiper separately
+            // Bundle swiper separately so it can be cached on its own
             swiper: ['swiper'],
           },
         },
       },
-
-      // Optimize dependencies using tree-shaking
-      chunkSizeWarningLimit: 1000,
 
       // Terser options for better minification
       terserOptions: {
@@ -52,25 +44,9 @@ export default defineConfig({
       },
     },
 
-    // Optimize CSS
     css: {
       // Enable sourcemaps for development
       devSourcemap: true,
-    },
-
-    // Add plugins for optimization
-    plugins: [
-      // Imagemin disabled due to errors with image processing
-    ],
-
-    // Optimize asset loading
-    assetsInclude: ['**/*.jpg', '**/*.png', '**/*.svg', '**/*.webp'],
-
-    // Set environment variables
-    define: {
-      'import.meta.env.PUBLIC_SITE_URL': JSON.stringify(
-        'https://www.ststarttogether.com/'
-      ),
     },
   },
 })

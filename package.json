@@ -10,23 +10,14 @@
   },
   "dependencies": {
     "astro": "^5.7.12",
-    "gsap": "^3.13.0",
-    "swiper": "^11.2.6"
+    "swiper": "^14.3.0"
   },
   "devDependencies": {
-    "@types/gsap": "^3.0.0",
-    "terser": "^5.39.0",
-    "vite-plugin-imagemin": "^0.6.1"
+    "terser": "^5.39.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "cwebp-bin",
       "esbuild",
-      "gifsicle",
-      "jpegtran-bin",
-      "mozjpeg",
-      "optipng-bin",
-      "pngquant-bin",
       "sharp"
     ]
   }

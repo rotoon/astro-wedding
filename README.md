@@ -1,48 +1,47 @@
-# Astro Starter Kit: Basics
+# SOM & TOON — Wedding Invitation
 
-```sh
-pnpm create astro@latest -- --template basics
-```
+Single-page wedding invitation for Suchanya (Som) & Nuttapon (Toon), 25 May 2025,
+Virgin Ville Sanpatong, Chiang Mai. Live at <https://www.ststarttogether.com/>.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+Built with [Astro](https://astro.build) as a fully static site. The only runtime
+dependency is [Swiper](https://swiperjs.com) for the photo slider; everything else
+is plain JS and CSS.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Commands
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+| Command        | Action                                        |
+| :------------- | :-------------------------------------------- |
+| `pnpm install` | Install dependencies                          |
+| `pnpm dev`     | Start the dev server at `localhost:4321`      |
+| `pnpm build`   | Build the static site to `./dist/`            |
+| `pnpm preview` | Preview the production build locally          |
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## Project structure
 
 ```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
+public/
+├── bgm/bgm.MP3          Background music (loaded on the guest's first tap)
+├── img/
+│   ├── hero.webp        Hero background
+│   ├── slide/           "Our Love Story" slider — every image here is shown, in random order per build
+│   ├── sweet/           "Sweet Moments" mosaic — numbered 1.webp, 2.webp, … (shown in number order)
+│   └── og-cover.webp    Social share image (opengraph.jpg is the JPEG copy)
+src/
+├── layouts/Layout.astro SEO/OG meta, JSON-LD, scroll-reveal observer, background music
+├── pages/
+│   ├── index.astro      Page composition
+│   ├── sitemap.xml.ts   Generates /sitemap.xml
+│   └── opengraph.jpg.ts Serves /opengraph.jpg
+├── components/          One component per section (Hero, Bio, PhotoGallery, PhotoMosaic, Countdown, …)
+└── styles/global.css    All shared styles
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## Adding photos
 
-## 🧞 Commands
+- **Slider:** drop `.webp` (or `.jpg`/`.png`) files into `public/img/slide/`.
+- **Mosaic:** add the next number in `public/img/sweet/` (e.g. `24.webp`). The grid
+  (`.photo-mosaic` in `src/styles/global.css`) has 24 cells — 3×8 on desktop, 2×12 on
+  mobile — so raise its `grid-template-rows` count if you add more.
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Keep photos around 1280px on the long edge and encode them as WebP (quality ~80).
+They are displayed at 600px tall at most.

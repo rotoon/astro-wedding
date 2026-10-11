@@ -6,7 +6,6 @@ interface BioCardProps {
   photo: string
   photoPosition: string
   className: string
-  delay: number
 }
 
 const bioData: BioCardProps[] = [
@@ -17,7 +16,6 @@ const bioData: BioCardProps[] = [
     photo: '/img/groom.webp',
     photoPosition: 'center',
     className: 'groom-card',
-    delay: 0,
   },
   {
     name: 'Suchanya',
@@ -26,15 +24,8 @@ const bioData: BioCardProps[] = [
     photo: '/img/bride.webp',
     photoPosition: 'top',
     className: 'bride-card',
-    delay: 150,
   },
 ]
-
-const ANIMATION_CONFIG = {
-  threshold: 0.2,
-  rootMargin: '0px 0px -50px 0px',
-  baseDelay: 100,
-} as const
 ---
 
 <!-- Couple Bio Section -->
@@ -60,12 +51,11 @@ const ANIMATION_CONFIG = {
         {
           bioData.map((bio, index) => (
             <>
-              <div
-                class={`bio-card ${bio.className} reveal-item`}
-                data-delay={bio.delay}
-              >
+              <div class={`bio-card ${bio.className} reveal-item`}>
                 <div
                   class='bio-photo'
+                  role='img'
+                  aria-label={`Photo of ${bio.name}`}
                   style={`
                   background-image: url('${bio.photo}');
                   background-size: cover;
@@ -79,10 +69,7 @@ const ANIMATION_CONFIG = {
                 </div>
               </div>
               {index === 0 && (
-                <div
-                  class='bio-separator reveal-item'
-                  data-delay={ANIMATION_CONFIG.baseDelay}
-                >
+                <div class='bio-separator reveal-item'>
                   <div class='bio-heart'>❤</div>
                 </div>
               )}
@@ -96,50 +83,3 @@ const ANIMATION_CONFIG = {
   <div class='accent-shape shape-2'></div>
 </section>
 
-<!-- All styles have been moved to global.css -->
-
-<script>
-  // Types
-  interface AnimationOptions {
-    threshold: number
-    rootMargin: string
-  }
-
-  // Constants
-  const ANIMATION_CONFIG = {
-    threshold: 0.2,
-    rootMargin: '0px 0px -50px 0px',
-  } satisfies AnimationOptions
-
-  // Utility functions
-  const handleIntersection = (entries: IntersectionObserverEntry[]): void => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return
-
-      const element = entry.target as HTMLElement
-      const delay = parseInt(element.dataset.delay || '0', 10)
-
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          element.classList.add('visible')
-        }, delay)
-      })
-
-      observer.unobserve(element)
-    })
-  }
-
-  // Initialize animations
-  const observer = new IntersectionObserver(
-    handleIntersection,
-    ANIMATION_CONFIG
-  )
-
-  // Setup on DOM load
-  document.addEventListener('DOMContentLoaded', () => {
-    const elements = document.querySelectorAll<HTMLElement>(
-      '.bio-card, .bio-separator'
-    )
-    elements.forEach((element) => observer.observe(element))
-  })
-</script>

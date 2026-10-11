@@ -6,97 +6,54 @@ import path from 'node:path'
 interface MosaicImage {
   filename: string
   path: string
-  caption: string
 }
-
-// Constants
-const ANIMATION_CONFIG = {
-  DELAY: 0,
-  THRESHOLD: 0.1,
-  ROOT_MARGIN: '0px -100px',
-  TRANSITION_TIMING: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  TRANSITION_DURATION: '0.6s',
-} as const
 
 // Utils
 const getMosaicImages = (): MosaicImage[] => {
-  const slideDir = path.join(process.cwd(), 'public/img/sweet')
+  const sweetDir = path.join(process.cwd(), 'public/img/sweet')
 
-  // Make sure the directory exists
-  if (!fs.existsSync(slideDir)) {
+  if (!fs.existsSync(sweetDir)) {
     return []
   }
 
-  // Get all files and filter for valid image files
-  const files = fs
-    .readdirSync(slideDir)
-    .filter((filename) => {
-      // Only include .webp files
-      return (
-        filename.endsWith('.webp') &&
-        // Make sure the filename has a number
-        /\d+/.test(filename) &&
-        // Ensure it's actually a file
-        fs.statSync(path.join(slideDir, filename)).isFile()
-      )
-    })
-    .sort((a: string, b: string) => {
+  // Numbered .webp files, sorted numerically (1, 2, ... 10) so the grid layout classes match
+  return fs
+    .readdirSync(sweetDir)
+    .filter((filename) => filename.endsWith('.webp') && /\d+/.test(filename))
+    .sort((a, b) => {
       const numA = Number.parseInt(a.match(/\d+/)?.[0] || '0', 10)
       const numB = Number.parseInt(b.match(/\d+/)?.[0] || '0', 10)
       return numA - numB
     })
-
-  return files.map((filename: string) => {
-    // Get filename without extension
-    const filenameWithoutExt = filename.replace(/\.\w+$/, '')
-
-    // Make sure we have a valid filename
-    if (!filenameWithoutExt || filenameWithoutExt.trim() === '') {
-      // Invalid filename, skip warning
-    }
-
-    return {
-      filename: filenameWithoutExt,
+    .map((filename) => ({
+      filename: filename.replace(/\.\w+$/, ''),
       path: `/img/sweet/${filename}`,
-      caption: `Photo ${filenameWithoutExt}`,
-    }
-  })
+    }))
 }
 
 const mosaicImages = getMosaicImages()
-
-// Generate preload links for critical images (first few visible images)
-const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 ---
 
 <!-- Photo Mosaic -->
 <section class='photo-mosaic-section'>
-  {/* Preload critical images */}
-  {
-    criticalImages.map((image) => (
-      <link
-        rel='preload'
-        as='image'
-        href={image.path}
-        fetchpriority='high'
-      />
-    ))
-  }
-
   <div class='section-decorative-line'></div>
   <h2 class='section-title reveal-title'>Sweet Moments</h2>
   <div class='photo-mosaic'>
     {
-      mosaicImages.map((image) => (
+      mosaicImages.map((image, index) => (
         <div
           class={`mosaic-item item${image.filename}`}
-          data-caption={image.caption}
-          data-image-number={image.filename}
           data-image-path={image.path}
+          role='button'
+          tabindex='0'
+          aria-label={`Open photo ${index + 1} of ${mosaicImages.length}`}
         >
-          <div
+          <img
             class='mosaic-image'
-            data-src={image.path}
+            src={image.path}
+            alt=''
+            loading='lazy'
+            decoding='async'
             style='background-color: #eee;'
           />
         </div>
@@ -108,134 +65,18 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 <!-- All styles have been moved to global.css -->
 
 <script>
-  // Types
-  interface AnimationConfig {
-    DELAY: number
-    THRESHOLD: number
-    ROOT_MARGIN: string
-  }
-
-  interface CacheConfig {
-    CACHE_NAME: string
-    CACHE_VERSION: string
-    MAX_CACHED_IMAGES: number
-  }
-
   // Constants
-  const ANIMATION_CONFIG: AnimationConfig = {
-    DELAY: 0,
+  const ANIMATION_CONFIG = {
     THRESHOLD: 0.1,
     ROOT_MARGIN: '10px 0px',
-  }
-
-  const CACHE_CONFIG: CacheConfig = {
-    CACHE_NAME: 'mosaic-images',
-    CACHE_VERSION: 'v1',
-    MAX_CACHED_IMAGES: 100, // Increased to cache more images at once
-  }
-
-  // Cache Management
-  const initializeCache = async (): Promise<void> => {
-    if (!('caches' in window)) return
-
-    const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
-    const cache = await caches.open(cacheName)
-
-    // Preload and cache all images right away
-    const allImages = document.querySelectorAll<HTMLElement>(
-      '.mosaic-image[data-src]'
-    )
-    const imagesToCache = Array.from(allImages)
-      .map((img) => img.dataset.src)
-      .filter((src): src is string => !!src)
-
-    await Promise.all(
-      imagesToCache.map(async (src) => {
-        try {
-          // Preload each image directly without showing warning messages
-          const preloadImg = new Image()
-          preloadImg.src = src
-
-          // Also try to cache it
-          const response = await fetch(src)
-          if (response.ok) {
-            await cache.put(src, response)
-          }
-        } catch (error) {
-          // Silently handle errors
-        }
-      })
-    )
-  }
-
-  // Image Loading with Cache
-  const loadImage = async (image: HTMLElement): Promise<void> => {
-    const src = image.dataset.src
-    if (!src) return
-
-    try {
-      // Load directly without waiting for cache
-      image.style.backgroundImage = `url(${src})`
-      delete image.dataset.src
-
-      // Cache the image for future use
-      if ('caches' in window) {
-        const cacheName = `${CACHE_CONFIG.CACHE_NAME}-${CACHE_CONFIG.CACHE_VERSION}`
-        const cache = await caches.open(cacheName)
-        try {
-          const response = await fetch(src)
-          if (response.ok) {
-            await cache.put(src, response.clone())
-          }
-        } catch (e) {
-          // Silently handle fetch errors for caching
-        }
-      }
-    } catch (error) {
-      image.style.backgroundImage = `url(${src})` // Fallback to direct loading
-      delete image.dataset.src
-    }
-  }
-
-  // Lazy Loading with Cache - modified to load all visible images immediately
-  const setupLazyLoading = (): void => {
-    const images = document.querySelectorAll<HTMLElement>(
-      '.mosaic-image[data-src]'
-    )
-
-    if (!('IntersectionObserver' in window)) {
-      images.forEach(loadImage)
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return
-
-          const image = entry.target as HTMLElement
-          loadImage(image)
-          observer.unobserve(image)
-        })
-      },
-      {
-        rootMargin: '100px', // Increased from 50px to load sooner
-        threshold: 0.01,
-      }
-    )
-
-    images.forEach((image) => observer.observe(image))
-  }
+  } as const
 
   // Animation Setup
   const setupAnimations = (): void => {
     const items = document.querySelectorAll<HTMLElement>('.mosaic-item')
 
     if (!('IntersectionObserver' in window)) {
-      // Show all items at once instead of one by one
-      items.forEach((item) => {
-        item.classList.add('visible')
-      })
+      items.forEach((item) => item.classList.add('visible'))
       return
     }
 
@@ -245,14 +86,7 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
           if (!entry.isIntersecting) return
 
           const item = entry.target as HTMLElement
-
-          // Immediately make item visible without delay
-          requestAnimationFrame(() => {
-            item.classList.add('visible')
-            const image = item.querySelector<HTMLElement>('.mosaic-image')
-            if (image?.dataset.src) loadImage(image)
-          })
-
+          requestAnimationFrame(() => item.classList.add('visible'))
           observer.unobserve(item)
         })
       },
@@ -272,31 +106,25 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
 
     if (!mosaic) return
 
-    const handleMouseOver = (e: Event): void => {
-      const target = e.target as HTMLElement
-      const item = target.closest('.mosaic-item') as HTMLElement
+    mosaic.addEventListener('mouseover', (e: Event) => {
+      const item = (e.target as HTMLElement).closest<HTMLElement>('.mosaic-item')
 
       if (item && activeItem !== item) {
         activeItem?.classList.remove('hover')
         item.classList.add('hover')
         activeItem = item
       }
-    }
+    })
 
-    const handleMouseLeave = (): void => {
-      if (activeItem) {
-        activeItem.classList.remove('hover')
-        activeItem = null
-      }
-    }
-
-    mosaic.addEventListener('mouseover', handleMouseOver)
-    mosaic.addEventListener('mouseleave', handleMouseLeave)
+    mosaic.addEventListener('mouseleave', () => {
+      activeItem?.classList.remove('hover')
+      activeItem = null
+    })
   }
 
-  // Image modal setup function - moved outside of the setupImageModal function
-  function createModal() {
-    if (document.querySelector('.image-modal')) return
+  const createModal = (): HTMLElement => {
+    const existing = document.querySelector<HTMLElement>('.image-modal')
+    if (existing) return existing
 
     const modalHTML = `
       <div class="image-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -304,9 +132,9 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
         <div class="image-modal-content">
           <div class="image-modal-header">
             <h3 id="modal-title" class="image-modal-title">Photo View</h3>
-            <button 
-              class="image-modal-close" 
-              aria-label="Close modal" 
+            <button
+              class="image-modal-close"
+              aria-label="Close modal"
               title="Close (Esc)"
             >
               <span aria-hidden="true">&times;</span>
@@ -315,7 +143,7 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
           <div class="image-modal-loading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;">Loading...</div>
           <button class="image-modal-nav image-modal-prev" aria-label="Previous image">&lt;</button>
           <button class="image-modal-nav image-modal-next" aria-label="Next image">&gt;</button>
-          <img class="image-modal-image" src="" alt="Full size image" style="opacity:0;transition:opacity 0.3s ease;">
+          <img class="image-modal-image" src="" alt="" style="opacity:0;transition:opacity 0.3s ease;">
           <div class="image-modal-footer">
             <button class="image-modal-btn image-modal-close-btn" aria-label="Close">Close</button>
           </div>
@@ -323,392 +151,178 @@ const criticalImages = mosaicImages.slice(0, 4) // Preload first 4 images
       </div>
     `
     document.body.insertAdjacentHTML('beforeend', modalHTML)
-
-    // Direct access to new elements for initialization
-    const modal = document.querySelector('.image-modal')
-    if (modal) {
-      const img = modal.querySelector('.image-modal-image') as HTMLImageElement
-      if (img) {
-        img.onload = function () {
-          img.style.opacity = '1'
-          const loading = modal.querySelector(
-            '.image-modal-loading'
-          ) as HTMLElement
-          if (loading) loading.style.display = 'none'
-        }
-
-        img.onerror = function () {
-          const loading = modal.querySelector(
-            '.image-modal-loading'
-          ) as HTMLElement
-          if (loading) loading.textContent = 'Failed to load image'
-        }
-      }
-    }
-    return modal
+    return document.querySelector<HTMLElement>('.image-modal')!
   }
 
   // Image modal setup function
-  const setupImageModal = () => {
-    // Create modal immediately to ensure it's ready
-    const modal = createModal() as HTMLElement
-    if (!modal) {
+  const setupImageModal = (): void => {
+    const modal = createModal()
+
+    const modalImage =
+      modal.querySelector<HTMLImageElement>('.image-modal-image')
+    const modalTitle =
+      modal.querySelector<HTMLHeadingElement>('.image-modal-title')
+    const modalClose =
+      modal.querySelector<HTMLButtonElement>('.image-modal-close')
+    const modalCloseBtn = modal.querySelector<HTMLButtonElement>(
+      '.image-modal-close-btn'
+    )
+    const modalBackdrop = modal.querySelector<HTMLDivElement>(
+      '.image-modal-backdrop'
+    )
+    const prevButton = modal.querySelector<HTMLButtonElement>('.image-modal-prev')
+    const nextButton = modal.querySelector<HTMLButtonElement>('.image-modal-next')
+    const loadingElement = modal.querySelector<HTMLElement>(
+      '.image-modal-loading'
+    )
+
+    if (
+      !modalImage ||
+      !modalClose ||
+      !modalCloseBtn ||
+      !modalBackdrop ||
+      !prevButton ||
+      !nextButton ||
+      !modalTitle ||
+      !loadingElement
+    ) {
       return
     }
 
-    // Setup modal interaction - only called when modal is created
-    const setupModal = () => {
-      const modalImage =
-        modal.querySelector<HTMLImageElement>('.image-modal-image')
-      const modalTitle =
-        modal.querySelector<HTMLHeadingElement>('.image-modal-title')
-      const modalClose =
-        modal.querySelector<HTMLButtonElement>('.image-modal-close')
-      const modalCloseBtn = modal.querySelector<HTMLButtonElement>(
-        '.image-modal-close-btn'
-      )
-      const modalBackdrop = modal.querySelector<HTMLDivElement>(
-        '.image-modal-backdrop'
-      )
-      const prevButton =
-        modal.querySelector<HTMLButtonElement>('.image-modal-prev')
-      const nextButton =
-        modal.querySelector<HTMLButtonElement>('.image-modal-next')
-      const loadingElement = modal.querySelector<HTMLElement>(
-        '.image-modal-loading'
-      )
+    let currentIndex = -1
+    const mosaicItems = Array.from(
+      document.querySelectorAll<HTMLElement>('.mosaic-item')
+    )
+    const getImagePath = (index: number): string =>
+      mosaicItems[index]?.dataset.imagePath || ''
 
-      // Safety check for required elements
-      if (
-        !modalImage ||
-        !modalClose ||
-        !modalCloseBtn ||
-        !modalBackdrop ||
-        !prevButton ||
-        !nextButton ||
-        !modalTitle ||
-        !loadingElement
-      ) {
-        return
-      }
-
-      let currentIndex = -1
-      const mosaicItems = Array.from(
-        document.querySelectorAll<HTMLElement>('.mosaic-item')
-      )
-
-      // Preload the adjacent images when showing an image
-      const preloadAdjacentImages = (index: number) => {
-        const preloadIndex = (idx: number) => {
-          if (idx < 0 || idx >= mosaicItems.length) return
-          const item = mosaicItems[idx]
-          if (!item) return
-
-          // Get direct image path from data attribute first
-          const imagePath = item.getAttribute('data-image-path')
-          if (imagePath) {
-            const preloadImg = new Image()
-            preloadImg.src = imagePath
-            return
-          }
-
-          // Otherwise use fallbacks
-          const imgUrl = getImageUrl(item)
-          if (!imgUrl) return
-
-          const preloadImg = new Image()
-          preloadImg.src = imgUrl
-        }
-
-        // Preload next and previous images
-        if (index > 0) preloadIndex(index - 1)
-        if (index < mosaicItems.length - 1) preloadIndex(index + 1)
-      }
-
-      // Function to get image URL from mosaic item - with memory caching
-      const urlCache = new Map<HTMLElement, string>()
-      const getImageUrl = (item: HTMLElement): string => {
-        if (urlCache.has(item)) {
-          const cachedUrl = urlCache.get(item) || ''
-          // Validate cached URL
-          if (cachedUrl && cachedUrl !== '/' && cachedUrl.trim() !== '') {
-            return cachedUrl
-          }
-          // If the cached URL is invalid, continue with other methods
-        }
-
-        // Try data-image-path first (most reliable)
-        const directPath = item.getAttribute('data-image-path')
-        if (directPath && directPath !== '/' && directPath.trim() !== '') {
-          urlCache.set(item, directPath)
-          return directPath
-        }
-
-        const imageElement = item.querySelector<HTMLElement>('.mosaic-image')
-        if (!imageElement) {
-          return ''
-        }
-
-        // Try to get from style background image
-        const backgroundImage = getComputedStyle(imageElement).backgroundImage
-        if (backgroundImage && backgroundImage !== 'none') {
-          const url = backgroundImage.replace(/url\(['"]?(.*?)['"]?\)/i, '$1')
-          if (url && url !== '/' && url.trim() !== '') {
-            urlCache.set(item, url)
-            return url
-          }
-        }
-
-        // Fallback to data-src attribute if background image not set yet
-        const dataSrc = imageElement.getAttribute('data-src')
-        if (dataSrc && dataSrc !== '/' && dataSrc.trim() !== '') {
-          // For images still using data-src, force loading the image
-          imageElement.style.backgroundImage = `url(${dataSrc})`
-          urlCache.set(item, dataSrc)
-          return dataSrc
-        }
-
-        // Extract image number from data-image-number or class or data-caption
-        const imageNumber = item.getAttribute('data-image-number')
-        if (imageNumber && imageNumber.trim() !== '') {
-          // Strip any existing .webp extension to prevent double extensions
-          const cleanNumber = imageNumber.replace(/\.webp$/, '')
-          if (cleanNumber && cleanNumber.trim() !== '') {
-            const directUrl = `/img/sweet/${cleanNumber}.webp`
-            urlCache.set(item, directUrl)
-            return directUrl
-          }
-        }
-
-        // Try from data-caption as last resort
-        const caption = item.getAttribute('data-caption') || ''
-        const match = caption.match(/Photo (\d+)/)
-        if (match && match[1]) {
-          const imgNumber = match[1]
-          if (imgNumber && imgNumber.trim() !== '') {
-            const directUrl = `/img/sweet/${imgNumber}.webp`
-            urlCache.set(item, directUrl)
-            return directUrl
-          }
-        }
-
-        return ''
-      }
-
-      // Function to update modal content
-      const updateModalContent = (index: number): void => {
-        const item = mosaicItems[index]
-        if (!item) {
-          return
-        }
-
-        // Show loading indicator
-        loadingElement.style.display = 'block'
-        loadingElement.textContent = 'Loading...'
-
-        // Reset image opacity
-        modalImage.style.opacity = '0'
-
-        // Get direct image path from data attribute first (more reliable)
-        const imagePath = item.getAttribute('data-image-path')
-        let imageUrl = ''
-
-        if (imagePath && imagePath.trim() !== '/') {
-          imageUrl = imagePath
-        } else {
-          // Fall back to other methods
-          imageUrl = getImageUrl(item)
-        }
-
-        if (!imageUrl || imageUrl.trim() === '/' || imageUrl.trim() === '') {
-          loadingElement.textContent = 'Image not found'
-
-          // Show placeholder image for empty URLs
-          modalImage.src =
-            'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="20">Image not found</text></svg>'
-          modalImage.style.opacity = '1'
-          return
-        }
-
-        const imageIndex = index + 1
-
-        // Set image source with error handling
-        modalImage.onerror = () => {
-          loadingElement.textContent = `Failed to load image: ${imageUrl}`
-
-          // Try with a clean path as fallback
-          const imageNumber = item.getAttribute('data-image-number')
-          if (imageNumber && imageNumber.trim() !== '') {
-            // Ensure we're not adding double extensions
-            const fallbackUrl = `/img/sweet/${imageNumber.replace(/\.webp$/, '')}.webp`
-            if (
-              fallbackUrl !== imageUrl &&
-              fallbackUrl !== '/img/sweet/.webp'
-            ) {
-              modalImage.src = fallbackUrl
-              return
-            }
-          }
-
-          modalImage.src =
-            'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="20">Image not found</text></svg>'
-        }
-
-        modalImage.onload = () => {
-          loadingElement.style.display = 'none'
-          modalImage.style.opacity = '1'
-        }
-
-        modalImage.src = imageUrl
-
-        modalTitle.textContent = `Photo ${imageIndex} of ${mosaicItems.length}`
-        currentIndex = index
-
-        // Update navigation buttons
-        prevButton.disabled = index === 0
-        nextButton.disabled = index === mosaicItems.length - 1
-
-        // Preload adjacent images for smoother navigation
-        if (typeof requestIdleCallback === 'function') {
-          requestIdleCallback(
-            () => {
-              preloadAdjacentImages(index)
-            },
-            { timeout: 500 }
-          )
-        } else {
-          setTimeout(() => {
-            preloadAdjacentImages(index)
-          }, 100)
-        }
-      }
-
-      // Close modal functions - reuse this function
-      const closeModal = (): void => {
-        modal.classList.remove('active')
-        document.body.style.overflow = ''
-        setTimeout(() => {
-          modalImage.src = ''
-          currentIndex = -1
-        }, 300)
-      }
-
-      // Navigation functions
-      const showPrevImage = (): void => {
-        if (currentIndex > 0) {
-          updateModalContent(currentIndex - 1)
-        }
-      }
-
-      const showNextImage = (): void => {
-        if (currentIndex < mosaicItems.length - 1) {
-          updateModalContent(currentIndex + 1)
-        }
-      }
-
-      // Add click handlers with event delegation
-      modal.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement
-
-        // Close button or backdrop click
-        if (
-          target === modalClose ||
-          target === modalCloseBtn ||
-          target === modalBackdrop ||
-          target.closest('.image-modal-close') === modalClose ||
-          target.closest('.image-modal-close-btn') === modalCloseBtn
-        ) {
-          closeModal()
-        }
-
-        // Previous button
-        if (
-          target === prevButton ||
-          target.closest('.image-modal-prev') === prevButton
-        ) {
-          showPrevImage()
-        }
-
-        // Next button
-        if (
-          target === nextButton ||
-          target.closest('.image-modal-next') === nextButton
-        ) {
-          showNextImage()
-        }
-      })
-
-      // Handle mosaic image clicks
-      document
-        .querySelector('.photo-mosaic')
-        ?.addEventListener('click', (e) => {
-          const target = e.target as HTMLElement
-          const mosaicItem = target.closest('.mosaic-item') as HTMLElement
-
-          if (!mosaicItem) return
-
-          console.log('Clicked mosaic item:', mosaicItem)
-          console.log(
-            'Image number:',
-            mosaicItem.getAttribute('data-image-number')
-          )
-
-          const index = mosaicItems.indexOf(mosaicItem)
-          if (index === -1) {
-            console.error('Could not find item in mosaicItems array')
-            return
-          }
-
-          console.log(`Opening modal for image at index ${index}`)
-          updateModalContent(index)
-          modal.classList.add('active')
-          document.body.style.overflow = 'hidden'
-
-          // Focus the close button for accessibility
-          modalClose.focus()
-        })
-
-      // Keyboard navigation
-      document.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (!modal.classList.contains('active')) return
-
-        if (e.key === 'Escape') {
-          closeModal()
-        } else if (e.key === 'ArrowLeft') {
-          showPrevImage()
-        } else if (e.key === 'ArrowRight') {
-          showNextImage()
-        }
+    // Warm the browser cache for the neighbours so prev/next feel instant
+    const preloadAdjacentImages = (index: number): void => {
+      ;[index - 1, index + 1].forEach((i) => {
+        const src = getImagePath(i)
+        if (src) new Image().src = src
       })
     }
 
-    // Setup modal immediately
-    setupModal()
+    modalImage.onload = () => {
+      loadingElement.style.display = 'none'
+      modalImage.style.opacity = '1'
+    }
 
-    // Ensure images are loaded and clickable
-    document.querySelectorAll<HTMLElement>('.mosaic-item').forEach((item) => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault() // Prevent any default behavior
-        console.log('Item clicked:', item)
-      })
+    modalImage.onerror = () => {
+      if (!modalImage.getAttribute('src')) return
+      loadingElement.style.display = 'block'
+      loadingElement.textContent = 'Failed to load image'
+    }
+
+    const updateModalContent = (index: number): void => {
+      const imageUrl = getImagePath(index)
+      if (!imageUrl) return
+
+      loadingElement.style.display = 'block'
+      loadingElement.textContent = 'Loading...'
+      modalImage.style.opacity = '0'
+      modalImage.src = imageUrl
+      modalImage.alt = `Som & Toon, sweet moment ${index + 1} of ${mosaicItems.length}`
+
+      modalTitle.textContent = `Photo ${index + 1} of ${mosaicItems.length}`
+      currentIndex = index
+
+      prevButton.disabled = index === 0
+      nextButton.disabled = index === mosaicItems.length - 1
+
+      preloadAdjacentImages(index)
+    }
+
+    const closeModal = (): void => {
+      modal.classList.remove('active')
+      document.body.style.overflow = ''
+      // Return focus to the photo that opened the modal
+      lastFocusedItem?.focus({ preventScroll: true })
+      setTimeout(() => {
+        modalImage.removeAttribute('src')
+        currentIndex = -1
+      }, 300)
+    }
+
+    const showPrevImage = (): void => {
+      if (currentIndex > 0) updateModalContent(currentIndex - 1)
+    }
+
+    const showNextImage = (): void => {
+      if (currentIndex < mosaicItems.length - 1) {
+        updateModalContent(currentIndex + 1)
+      }
+    }
+
+    modal.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement
+
+      if (
+        target === modalBackdrop ||
+        target.closest('.image-modal-close') ||
+        target.closest('.image-modal-close-btn')
+      ) {
+        closeModal()
+      } else if (target.closest('.image-modal-prev')) {
+        showPrevImage()
+      } else if (target.closest('.image-modal-next')) {
+        showNextImage()
+      }
+    })
+
+    let lastFocusedItem: HTMLElement | null = null
+
+    const openModal = (mosaicItem: HTMLElement): void => {
+      const index = mosaicItems.indexOf(mosaicItem)
+      if (index === -1) return
+
+      lastFocusedItem = mosaicItem
+      updateModalContent(index)
+      modal.classList.add('active')
+      document.body.style.overflow = 'hidden'
+
+      // Focus the close button for accessibility
+      modalClose.focus()
+    }
+
+    const mosaic = document.querySelector('.photo-mosaic')
+
+    mosaic?.addEventListener('click', (e) => {
+      const mosaicItem = (e.target as HTMLElement).closest<HTMLElement>(
+        '.mosaic-item'
+      )
+      if (mosaicItem) openModal(mosaicItem)
+    })
+
+    // Items are role="button", so Enter and Space open them like a real button
+    mosaic?.addEventListener('keydown', (e) => {
+      const event = e as KeyboardEvent
+      if (event.key !== 'Enter' && event.key !== ' ') return
+
+      const mosaicItem = (event.target as HTMLElement).closest<HTMLElement>(
+        '.mosaic-item'
+      )
+      if (!mosaicItem) return
+
+      event.preventDefault()
+      openModal(mosaicItem)
+    })
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (!modal.classList.contains('active')) return
+
+      if (e.key === 'Escape') {
+        closeModal()
+      } else if (e.key === 'ArrowLeft') {
+        showPrevImage()
+      } else if (e.key === 'ArrowRight') {
+        showNextImage()
+      }
     })
   }
 
-  // Initialize everything when DOM is ready
-  document.addEventListener('DOMContentLoaded', () => {
-    // Set up animations first to make elements visible
-    setupAnimations()
-
-    // Then load the images
-    setupLazyLoading()
-
-    // Set up other features in parallel
-    setupHoverEffects()
-    setupImageModal()
-
-    // Initialize cache in the background
-    setTimeout(() => {
-      initializeCache().catch(() => {})
-    }, 100)
-  })
+  setupAnimations()
+  setupHoverEffects()
+  setupImageModal()
 </script>
