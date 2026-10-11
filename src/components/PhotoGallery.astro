@@ -7,7 +7,7 @@ import path from 'node:path'
 const slideDir = path.join(process.cwd(), 'public/img/slide')
 const galleryImages = fs
   .readdirSync(slideDir)
-  // .filter((file) => file.endsWith('.webp'))
+  .filter((file) => /\.(webp|jpe?g|png)$/i.test(file))
   .sort(() => Math.random() - 0.5) // Random sort instead of alphabetical sort
 ---
 
@@ -22,12 +22,16 @@ const galleryImages = fs
   <div class='swiper-container'>
     <div class='swiper-wrapper'>
       {
-        galleryImages.map((filename) => (
+        galleryImages.map((filename, index) => (
           <div class='swiper-slide'>
-            <div
-              class='gallery-image'
-              style={`background-image: url(/img/slide/${filename})`}
-            />
+            <div class='gallery-image'>
+              <img
+                src={`/img/slide/${filename}`}
+                alt={`Som & Toon, photo ${index + 1} of ${galleryImages.length}`}
+                loading='lazy'
+                decoding='async'
+              />
+            </div>
           </div>
         ))
       }
@@ -112,69 +116,23 @@ const galleryImages = fs
 </style>
 
 <script>
-  // Adding TypeScript declarations for Swiper
-  declare const Swiper: any
+  import Swiper from 'swiper'
+  import { A11y, Autoplay, Navigation, Pagination } from 'swiper/modules'
+  import 'swiper/css'
+  import 'swiper/css/navigation'
+  import 'swiper/css/pagination'
 
-  interface SwiperOptions {
-    effect: string
-    grabCursor: boolean
-    centeredSlides: boolean
-    slidesPerView: string | number
-    initialSlide: number
-    coverflowEffect: {
-      rotate: number
-      stretch: number
-      depth: number
-      modifier: number
-      slideShadows: boolean
-    }
-    pagination: {
-      el: string
-      clickable: boolean
-    }
-    navigation: {
-      nextEl: string
-      prevEl: string
-    }
-    breakpoints: {
-      [key: number]: {
-        slidesPerView: string | number
-        spaceBetween: number
-      }
-    }
-    preloadImages: boolean
-    lazy:
-      | boolean
-      | {
-          loadPrevNext: boolean
-          loadPrevNextAmount: number
-          loadOnTransitionStart: boolean
-          elementClass: string
-          loadingClass: string
-          loadedClass: string
-          preloaderClass: string
-        }
-    watchSlidesProgress: boolean
-    autoplay: {
-      delay: number
-      disableOnInteraction: boolean
-      pauseOnMouseEnter: boolean
-    }
-  }
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches
 
-  const swiperOptions: SwiperOptions = {
-    effect: 'slide',
+  new Swiper('.swiper-container', {
+    modules: [A11y, Autoplay, Navigation, Pagination],
     grabCursor: true,
-    centeredSlides: false,
-    slidesPerView: 'auto',
-    initialSlide: 0,
-    coverflowEffect: {
-      rotate: 5,
-      stretch: 0,
-      depth: 100,
-      modifier: 1,
-      slideShadows: false,
-    },
+    slidesPerView: 1,
+    spaceBetween: 20,
+    // Swiper switches the nearest lazy images to eager so slides are ready before they appear
+    lazyPreloadPrevNext: 2,
     pagination: {
       el: '.swiper-pagination',
       clickable: true,
@@ -183,11 +141,11 @@ const galleryImages = fs
       nextEl: '.swiper-button-next',
       prevEl: '.swiper-button-prev',
     },
+    a11y: {
+      prevSlideMessage: 'Previous photo',
+      nextSlideMessage: 'Next photo',
+    },
     breakpoints: {
-      320: {
-        slidesPerView: 1,
-        spaceBetween: 20,
-      },
       768: {
         slidesPerView: 2,
         spaceBetween: 20,
@@ -204,65 +162,13 @@ const galleryImages = fs
         slidesPerView: 5,
         spaceBetween: 30,
       },
-      // 1920: {
-      //   slidesPerView: 6,
-      //   spaceBetween: 30,
-      // },
     },
-    preloadImages: true,
-    lazy: false,
-    watchSlidesProgress: true,
-    autoplay: {
-      delay: 3000,
-      disableOnInteraction: false,
-      pauseOnMouseEnter: true,
-    },
-  }
-
-  // Initialize swiper with performance optimizations
-  const initializeSwiper = () => {
-    try {
-      if (typeof Swiper === 'undefined') {
-        setTimeout(initializeSwiper, 500)
-        return
-      }
-
-      // Initialize Swiper
-      const swiper = new Swiper('.swiper-container', swiperOptions)
-
-      // Optimize navigation interactions
-      const next = document.querySelector('.swiper-button-next')
-      const prev = document.querySelector('.swiper-button-prev')
-
-      if (next) {
-        next.addEventListener('click', () => {
-          // Navigation functionality
-        })
-      }
-
-      if (prev) {
-        prev.addEventListener('click', () => {
-          // Navigation functionality
-        })
-      }
-    } catch (error) {
-      console.error('Error initializing Swiper:', error)
-    }
-  }
-
-  // Use requestIdleCallback or setTimeout for better performance
-  const initWhenIdle = () => {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => initializeSwiper(), { timeout: 2000 })
-    } else {
-      setTimeout(initializeSwiper, 1000)
-    }
-  }
-
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initWhenIdle)
-  } else {
-    initWhenIdle()
-  }
+    autoplay: prefersReducedMotion
+      ? false
+      : {
+          delay: 3000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        },
+  })
 </script>

@@ -36,83 +36,75 @@
     document.body.classList.add('loading')
 
     // Force scroll to top
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'instant',
-    })
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
 
-    // Configuration for 1.5 second loading
-    const TOTAL_LOADING_TIME = 1500 // 1.5 seconds in milliseconds
-    const PROGRESS_INTERVAL = 100 // Update every 30ms for smooth animation
-    const TOTAL_STEPS = TOTAL_LOADING_TIME / PROGRESS_INTERVAL
-    const PROGRESS_INCREMENT = 100 / TOTAL_STEPS
+    // Show the intro for at least MIN_LOADING_TIME, wait for the hero image,
+    // but never keep guests waiting longer than MAX_LOADING_TIME
+    const MIN_LOADING_TIME = 1500
+    const MAX_LOADING_TIME = 3000
+    const PROGRESS_INTERVAL = 100 // Update the percentage every 100ms
+    const PROGRESS_INCREMENT = 100 / (MIN_LOADING_TIME / PROGRESS_INTERVAL)
 
     let progress = 0
-    let progressComplete = false
+    let heroReady = false
+    let minTimeElapsed = false
+    let hidden = false
 
     function updateProgress() {
-      if (progressComplete) return
+      if (hidden) return
 
-      if (progress < 100) {
-        progress += PROGRESS_INCREMENT
-        progress = Math.min(progress, 100)
+      // Hold at 95% until the hero image is ready
+      progress = Math.min(progress + PROGRESS_INCREMENT, heroReady ? 100 : 95)
 
-        if (percentElement) {
-          percentElement.textContent = Math.round(progress) + '%'
-        }
-
-        // Continue updates for smooth animation
-        if (progress < 100) {
-          setTimeout(updateProgress, PROGRESS_INTERVAL)
-        }
+      if (percentElement) {
+        percentElement.textContent = Math.round(progress) + '%'
       }
+
+      setTimeout(updateProgress, PROGRESS_INTERVAL)
     }
 
-    // Start progress animation
-    updateProgress()
-
     function hideLoadingScreen() {
-      progressComplete = true
+      if (hidden) return
+      hidden = true
 
       if (percentElement) {
         percentElement.textContent = '100%'
       }
 
-      if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
-        loadingScreen.classList.add('hidden')
-      }
+      loadingScreen?.classList.add('hidden')
 
       // Show main content with a slight delay for smooth transition
       setTimeout(function () {
-        if (mainContainer && !mainContainer.classList.contains('visible')) {
-          mainContainer.classList.add('visible')
-          document.body.classList.remove('loading')
-          window.scrollTo({
-            top: 0,
-            left: 0,
-            behavior: 'instant',
-          })
-        }
-      }, 300) // Short delay for smooth transition
-    }
-
-    // Hide loading screen after exactly 1.5 seconds
-    setTimeout(hideLoadingScreen, TOTAL_LOADING_TIME)
-
-    // Failsafe: Force hide after 2 seconds if something goes wrong
-    setTimeout(function () {
-      if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+        mainContainer?.classList.add('visible')
         document.body.classList.remove('loading')
         document.body.classList.add('loaded')
-        loadingScreen.classList.add('hidden')
-        mainContainer.classList.add('visible')
-        window.scrollTo({
-          top: 0,
-          left: 0,
-          behavior: 'instant',
-        })
-      }
-    }, 1500)
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      }, 300)
+    }
+
+    function maybeHide() {
+      if (heroReady && minTimeElapsed) hideLoadingScreen()
+    }
+
+    // The hero is preloaded in <head>, so this usually resolves from cache
+    const hero = new Image()
+    hero.src = '/img/hero.webp'
+    hero
+      .decode()
+      .catch(function () {})
+      .then(function () {
+        heroReady = true
+        maybeHide()
+      })
+
+    setTimeout(function () {
+      minTimeElapsed = true
+      maybeHide()
+    }, MIN_LOADING_TIME)
+
+    // Failsafe: never block the page longer than MAX_LOADING_TIME
+    setTimeout(hideLoadingScreen, MAX_LOADING_TIME)
+
+    updateProgress()
   })
 </script>

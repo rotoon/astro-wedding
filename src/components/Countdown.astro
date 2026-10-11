@@ -51,20 +51,12 @@
 </section>
 
 <script is:inline>
-  // Define getElement to avoid reference errors
-  const getElement = (selector) => {
-    if (typeof selector === 'string') {
-      return document.querySelector(selector)
-    }
-    return selector
-  }
-
   const weddingDate = new Date('2025-05-25T08:39:00+07:00').getTime()
   const countdownElements = {
-    days: getElement('#days'),
-    hours: getElement('#hours'),
-    minutes: getElement('#minutes'),
-    seconds: getElement('#seconds'),
+    days: document.getElementById('days'),
+    hours: document.getElementById('hours'),
+    minutes: document.getElementById('minutes'),
+    seconds: document.getElementById('seconds'),
   }
 
   const updateCountdown = () => {
@@ -73,7 +65,7 @@
 
     if (distance < 0) {
       clearInterval(countdownTimer)
-      getElement('#countdown').innerHTML =
+      document.getElementById('countdown').innerHTML =
         "<div class='countdown-message'>The wedding is happening now!</div>"
       return
     }

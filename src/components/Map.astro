@@ -26,16 +26,15 @@
 
     if (directionsBtn) {
       directionsBtn.addEventListener('click', () => {
-        // Updated coordinates from Google Maps embed
+        // Venue coordinates (Wedding Venues at Virgin Ville Sanpatong Chiangmai)
         const latitude = 18.6097137
         const longitude = 98.8788303
-        const venueName = 'Wedding Venues at Virgin Ville Sanpatong Chiangmai'
 
-        // Create Google Maps URL with directions
-        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving&destination_place_id=${encodeURIComponent(venueName)}`
+        // Google Maps directions URL; destination_place_id only accepts a real Place ID, so it is omitted
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`
 
         // Open in new tab
-        window.open(mapsUrl, '_blank')
+        window.open(mapsUrl, '_blank', 'noopener')
       })
     }
   })

@@ -19,11 +19,8 @@ const {
 
 // Wedding details for structured data
 const weddingDate = '2025-05-25T08:39:00+07:00'
-const weddingLocation =
-  'Wedding Venues at Virgin Ville Sanpatong Chiangmai, 194/5 หมู่6 ตำบล ยุหว่า อำเภอสันป่าตอง เชียงใหม่ 50120 ไทย'
 const coupleNames = 'Suchanya & Nuttapon'
 
-// Determine the OpenGraph image URL - use dynamic endpoint if specified
 const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
 
 // Event structured data - serialized with JSON.stringify so values are escaped
@@ -68,7 +65,7 @@ const eventSchema = {
     />
     <link
       rel='icon'
-      type='image/svg+xml'
+      type='image/x-icon'
       href='/favicon.ico'
     />
 
@@ -130,7 +127,7 @@ const eventSchema = {
     />
     <meta
       property='og:image:height'
-      content='630'
+      content='600'
     />
     <meta
       property='og:image:alt'
@@ -237,13 +234,13 @@ const eventSchema = {
       href='https://fonts.gstatic.com'
       crossorigin
     />
+
+    <!-- Hero image is the first thing guests see; fetch it before the CSS asks for it -->
     <link
-      rel='preconnect'
-      href='https://cdnjs.cloudflare.com'
-    />
-    <link
-      rel='preconnect'
-      href='https://unpkg.com'
+      rel='preload'
+      as='image'
+      href='/img/hero.webp'
+      fetchpriority='high'
     />
 
     <!-- Critical CSS for faster rendering -->
@@ -305,45 +302,9 @@ const eventSchema = {
       />
     </noscript>
 
-    <!-- Optimized CSS loading -->
-    <link
-      rel='stylesheet'
-      href='https://unpkg.com/swiper/swiper-bundle.min.css'
-      media='print'
-      onload="this.media='all'"
-    />
 
-    <!-- Load utility functions inline to ensure they're available -->
+    <!-- Scroll reveal for .reveal-title / .reveal-text / .reveal-item (single observer for the page) -->
     <script is:inline>
-      // Utility functions for performance optimization
-
-      // Get element utility function - DOM element selection
-      window.getElement = function (selector) {
-        if (typeof selector === 'string') {
-          return document.querySelector(selector)
-        }
-        return selector
-      }
-
-      // Get elements - returns an array for multiple elements
-      window.getElements = function (selector) {
-        return Array.from(document.querySelectorAll(selector))
-      }
-
-      // Optimized throttle function for performance
-      window.throttle = function (func, limit) {
-        let inThrottle
-        return function () {
-          const args = arguments
-          const context = this
-          if (!inThrottle) {
-            func.apply(context, args)
-            inThrottle = true
-            setTimeout(() => (inThrottle = false), limit)
-          }
-        }
-      }
-
       // Setup animation observer for reveal effects
       document.addEventListener('DOMContentLoaded', function () {
         // Setup animation reveal elements
@@ -497,24 +458,6 @@ const eventSchema = {
         }
       })
     </script>
-
-    <!-- Consolidated GSAP scripts -->
-    <script
-      is:inline
-      defer
-      src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js'
-    ></script>
-    <script
-      is:inline
-      defer
-      src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js'
-    ></script>
-    <!-- Swiper.js for sliders -->
-    <script
-      is:inline
-      defer
-      src='https://unpkg.com/swiper/swiper-bundle.min.js'
-    ></script>
   </head>
   <body>
     <div class='noise-overlay'></div>

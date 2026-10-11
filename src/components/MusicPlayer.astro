@@ -3,9 +3,13 @@
   <button
     id='audio-toggle'
     class='audio-btn muted'
+    type='button'
+    aria-label='Background music'
+    aria-pressed='false'
   >
     <svg
       class='audio-on'
+      aria-hidden='true'
       viewBox='0 0 24 24'
       fill='none'
       stroke='currentColor'
@@ -19,6 +23,7 @@
     </svg>
     <svg
       class='audio-off'
+      aria-hidden='true'
       viewBox='0 0 24 24'
       fill='none'
       stroke='currentColor'
@@ -68,45 +73,27 @@
 
     // ฟังก์ชันเริ่มต้นปุ่มควบคุม
     function initToggleButton() {
-      // ดึง BGM element และตรวจสอบสถานะเริ่มต้น
       const bgmGlobal = window.getBGM()
 
-      // ตรวจสอบและตั้งค่าสถานะเริ่มต้นของปุ่ม
-      updateButtonState(bgmGlobal.muted)
-
-      // ฟังก์ชันอัพเดตสถานะปุ่ม
-      function updateButtonState(muted) {
-        if (muted) {
-          audioToggle.classList.add('muted')
-        } else {
-          audioToggle.classList.remove('muted')
-        }
+      // อัพเดตไอคอนและ aria-pressed ให้ตรงกับเสียงที่ได้ยินจริง
+      function updateButtonState() {
+        const silent = bgmGlobal.muted || bgmGlobal.paused
+        audioToggle.classList.toggle('muted', silent)
+        audioToggle.setAttribute('aria-pressed', String(!silent))
       }
+
+      updateButtonState()
 
       // ตั้งค่าการคลิกปุ่ม
       audioToggle.addEventListener('click', function () {
-        // เรียกใช้ toggleBGM จาก global scope และรับค่าสถานะปัจจุบัน
-        const isPlaying = window.toggleBGM()
-
-        // อัพเดตสถานะของปุ่ม
-        updateButtonState(!isPlaying)
+        window.toggleBGM()
+        updateButtonState()
       })
 
-      // เพิ่ม listener เพื่อติดตามการเปลี่ยนแปลงสถานะจากที่อื่น
-      bgmGlobal.addEventListener('play', function () {
-        updateButtonState(bgmGlobal.muted)
-      })
-
-      bgmGlobal.addEventListener('pause', function () {
-        updateButtonState(true)
-      })
-
-      // ตรวจสอบและอัพเดตสถานะทุก 1 วินาที (เผื่อมีการควบคุมจากที่อื่น)
-      setInterval(function () {
-        updateButtonState(bgmGlobal.muted || bgmGlobal.paused)
-      }, 1000)
+      // ติดตามการเปลี่ยนแปลงสถานะจากที่อื่น (เริ่มเล่น, หยุด, ปิด/เปิดเสียง)
+      bgmGlobal.addEventListener('play', updateButtonState)
+      bgmGlobal.addEventListener('pause', updateButtonState)
+      bgmGlobal.addEventListener('volumechange', updateButtonState)
     }
   })
 </script>
-
-
