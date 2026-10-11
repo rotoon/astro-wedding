@@ -103,6 +103,12 @@
   margin: 0 auto;
 }
 
+@media (min-width: 900px) {
+  .wishes-feed {
+    max-width: 1180px;
+  }
+}
+
 .wishes-count {
   margin-bottom: 1rem;
   font-size: 0.85rem;
@@ -112,6 +118,12 @@
 }
 
 .wishes-list {
+  display: grid;
+  align-items: start;
+  gap: 1.25rem;
+}
+
+.wishes-column {
   display: grid;
   gap: 1.25rem;
 }
@@ -216,6 +228,7 @@
   height: 100%;
   object-fit: cover;
   user-select: none;
+  background-color: var(--secondary-color); /* placeholder while loading */
 }
 
 .wish-footer {

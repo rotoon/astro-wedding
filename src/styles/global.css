@@ -436,11 +436,12 @@ button:focus-visible,
 
 .heading-decorative {
   font-family: var(--body-font);
-  font-size: 0.8rem;
-  font-weight: 300;
-  letter-spacing: 0.2em;
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--gold-color);
+  color: #ecd6a8; /* lighter gold: readable on the pale sky */
+  text-shadow: 0 1px 8px rgba(48, 31, 18, 0.45);
   margin-bottom: 1rem;
   position: relative;
   display: inline-block;
@@ -1460,6 +1461,31 @@ button:focus-visible,
   letter-spacing: 0.05em;
 }
 
+/* Wide landscape screens: the hero photo is portrait, so a centered crop shows
+   only sky. Show the couple (left of centre), put the date over the sky on the
+   left and the names in the empty space on the right. */
+@media (min-width: 992px) and (min-aspect-ratio: 5/4) {
+  .hero-bg {
+    background-position: center 70%;
+  }
+
+  /* (higher specificity than the min-width: 992px `right: 10%` rule below) */
+  .parallax-content .hero-date {
+    right: auto;
+    left: 7%;
+  }
+
+  .parallax-content {
+    align-items: flex-end;
+    padding-right: 9vw;
+  }
+
+  .hero-title {
+    width: min(34vw, 480px);
+    text-shadow: 0 2px 18px rgba(48, 31, 18, 0.35);
+  }
+}
+
 /* ========= Responsive Design ========= */
 @media (max-width: 767px) {
   :root {
@@ -1899,10 +1925,9 @@ button:focus-visible,
 }
 
 .wishes-wall-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  align-items: start; /* text-only cards keep their own height */
-  gap: 1.25rem;
+  /* Masonry: cards of different heights stack without gaps */
+  columns: 3 280px;
+  column-gap: 1.25rem;
   max-width: 1000px;
   margin: 0 auto;
   text-align: left;
@@ -1915,6 +1940,8 @@ button:focus-visible,
 .wall-card {
   display: flex;
   flex-direction: column;
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
   overflow: hidden;
   background-color: #fff;
   border: 1px solid rgba(218, 202, 190, 0.6);
@@ -1940,6 +1967,7 @@ button:focus-visible,
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+  background-color: var(--secondary-color); /* placeholder while loading */
 }
 
 .wall-message {

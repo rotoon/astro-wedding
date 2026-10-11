@@ -21,6 +21,7 @@ Requires Node.js 22.12+ or 24 (`package.json` `engines`; Vercel builds with 24.x
 | `pnpm build`   | Build the static site to `./dist/`            |
 | `pnpm preview` | Preview the production build locally          |
 | `pnpm check`   | Type-check `.astro` and `.ts` files           |
+| `pnpm test:e2e`| Guestbook end-to-end test (see below)         |
 
 ## Project structure
 
@@ -89,11 +90,15 @@ the feed updates live, scrolls infinitely and supports likes. The homepage shows
 2. Deploy the security rules in [`firebase/`](firebase):
    `npx firebase-tools deploy --only firestore:rules,storage` (project from `.firebaserc`).
 
-**Local testing with the emulators** (needs Java):
+**Local testing with the emulators** (needs Java; never touches production data):
 
 ```sh
-npx firebase-tools emulators:start --only firestore,storage --project demo-wedding
-PUBLIC_FIREBASE_EMULATOR_HOST=127.0.0.1 PUBLIC_FIREBASE_PROJECT_ID=demo-wedding \
-PUBLIC_FIREBASE_API_KEY=demo PUBLIC_FIREBASE_STORAGE_BUCKET=demo-wedding.appspot.com pnpm dev
+npx firebase-tools emulators:start --only firestore,storage --project demo-wedding   # terminal 1
+pnpm build:emulator        # dist/ pointed at the emulators
+npx playwright install chromium   # once
+pnpm test:e2e              # 41 checks: posting + photos, likes, realtime, infinite scroll, rules…
 ```
+
+For manual testing against the emulators use `pnpm dev` with the same `PUBLIC_FIREBASE_*`
+values as the `build:emulator` script in `package.json`.
 

@@ -1,11 +1,32 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { isConfigured } from '../config'
 import { useWishesFeed } from '../hooks'
 import { NotConfigured } from './NotConfigured'
 import { QueryProvider } from './QueryProvider'
 import WishCard from './WishCard'
 
+// Masonry columns: 1 on phones, 2 from 900px, 3 from 1280px
+const COLUMN_QUERIES = ['(min-width: 1280px)', '(min-width: 900px)']
+
+const useColumnCount = () => {
+  const count = () => {
+    const index = COLUMN_QUERIES.findIndex((query) => window.matchMedia(query).matches)
+    return index === -1 ? 1 : COLUMN_QUERIES.length + 1 - index
+  }
+  const [columns, setColumns] = useState(count)
+
+  useEffect(() => {
+    const lists = COLUMN_QUERIES.map((query) => window.matchMedia(query))
+    const update = () => setColumns(count())
+    lists.forEach((list) => list.addEventListener('change', update))
+    return () => lists.forEach((list) => list.removeEventListener('change', update))
+  }, [])
+
+  return columns
+}
+
 function Feed() {
+  const columnCount = useColumnCount()
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useWishesFeed()
   const sentinel = useRef<HTMLDivElement>(null)
@@ -49,12 +70,25 @@ function Feed() {
   return (
     <>
       <p className='wishes-count'>{wishes.length}{hasNextPage ? '+' : ''} คำอวยพร</p>
-      <div className='wishes-list'>
-        {wishes.map((wish) => (
-          <WishCard
-            key={wish.id}
-            wish={wish}
-          />
+      {/* Round-robin into columns so newest-first still reads left to right */}
+      <div
+        className='wishes-list'
+        style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
+      >
+        {Array.from({ length: columnCount }, (_, column) => (
+          <div
+            className='wishes-column'
+            key={column}
+          >
+            {wishes
+              .filter((_, index) => index % columnCount === column)
+              .map((wish) => (
+                <WishCard
+                  key={wish.id}
+                  wish={wish}
+                />
+              ))}
+          </div>
         ))}
       </div>
       <div
