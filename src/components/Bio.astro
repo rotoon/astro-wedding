@@ -1,30 +1,10 @@
 ---
-interface BioCardProps {
-  name: string
-  birthday: string
-  description: string
-  photo: string
-  photoPosition: string
-  className: string
-}
+import { couple } from '../data/wedding'
 
-const bioData: BioCardProps[] = [
-  {
-    name: 'Nuttapon',
-    birthday: 'September 8, 1989',
-    description: 'Developer, passionate about travel',
-    photo: '/img/groom.webp',
-    photoPosition: 'center',
-    className: 'groom-card',
-  },
-  {
-    name: 'Suchanya',
-    birthday: 'September 27, 1990',
-    description: 'Food and Beverage, loves photography and coffee',
-    photo: '/img/bride.webp',
-    photoPosition: 'top',
-    className: 'bride-card',
-  },
+// Groom first, then bride; photoPosition is the background focal point
+const bioData = [
+  { ...couple.groom, photoPosition: 'center', className: 'groom-card' },
+  { ...couple.bride, photoPosition: 'top', className: 'bride-card' },
 ]
 ---
 

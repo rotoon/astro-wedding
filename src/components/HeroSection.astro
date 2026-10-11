@@ -1,3 +1,7 @@
+---
+import { couple, dateParts } from '../data/wedding'
+---
+
 <div class='parallax-hero'>
   <div
     class='parallax-layer hero-bg'
@@ -11,16 +15,16 @@
   </div>
   <div class='parallax-content'>
     <div class='hero-date'>
-      <div class='date-line'><span>25</span></div>
-      <div class='date-line'><span>05</span></div>
-      <div class='date-line'><span>2025</span></div>
+      <div class='date-line'><span>{dateParts.day}</span></div>
+      <div class='date-line'><span>{dateParts.month}</span></div>
+      <div class='date-line'><span>{dateParts.year}</span></div>
     </div>
     <div class='hero-title'>
       <div class='heading-decorative'>It's happening!</div>
       <h1 class='main-title'>
-        <span class='name-line-1'>Suchanya</span>
+        <span class='name-line-1'>{couple.bride.name}</span>
         <span class='name-separator'>&</span>
-        <span class='name-line-2'>Nuttapon</span>
+        <span class='name-line-2'>{couple.groom.name}</span>
       </h1>
     </div>
     <div class='scroll-indicator'>

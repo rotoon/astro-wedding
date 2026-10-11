@@ -1,4 +1,4 @@
-<!-- Background Music: audio element is created lazily in Layout.astro -->
+<!-- Background music toggle; the audio element is created lazily by the script below -->
 <div class='audio-control'>
   <button
     id='audio-toggle'
@@ -48,52 +48,82 @@
   </button>
 </div>
 
-<script is:inline>
-  // จัดการกับปุ่มควบคุมเสียงในส่วน MusicPlayer component
-  document.addEventListener('DOMContentLoaded', function () {
-    const audioToggle = document.getElementById('audio-toggle')
+<script>
+  const BGM_SRC = '/bgm/bgm.MP3'
+  const BGM_VOLUME = 0.6
+  // Events browsers count as user activation (allowed to start audio).
+  // scroll and touchstart are not, so they would only download the file in vain.
+  const ACTIVATION_EVENTS = ['click', 'touchend', 'keydown'] as const
 
-    if (!audioToggle) return
+  const toggleButton = document.getElementById('audio-toggle')
 
-    // รอให้ window.toggleBGM และ window.getBGM ถูกกำหนดค่าจาก Layout
-    const checkForGlobalBGM = function () {
-      if (
-        typeof window.toggleBGM === 'function' &&
-        typeof window.getBGM === 'function'
-      ) {
-        initToggleButton()
-      } else {
-        // ลองอีกครั้งหลังจากนี้ 100ms
-        setTimeout(checkForGlobalBGM, 100)
-      }
-    }
+  // No src yet: nothing is downloaded until the guest's first interaction
+  const bgm = new Audio()
+  bgm.id = 'bgm-global'
+  bgm.preload = 'none'
+  bgm.loop = true
+  bgm.volume = BGM_VOLUME
+  bgm.style.display = 'none'
+  document.body.appendChild(bgm)
 
-    // เริ่มต้นตรวจสอบ
-    checkForGlobalBGM()
+  let started = false
 
-    // ฟังก์ชันเริ่มต้นปุ่มควบคุม
-    function initToggleButton() {
-      const bgmGlobal = window.getBGM()
+  const updateButtonState = () => {
+    if (!toggleButton) return
+    const silent = bgm.muted || bgm.paused
+    toggleButton.classList.toggle('muted', silent)
+    toggleButton.setAttribute('aria-pressed', String(!silent))
+  }
 
-      // อัพเดตไอคอนและ aria-pressed ให้ตรงกับเสียงที่ได้ยินจริง
-      function updateButtonState() {
-        const silent = bgmGlobal.muted || bgmGlobal.paused
-        audioToggle.classList.toggle('muted', silent)
-        audioToggle.setAttribute('aria-pressed', String(!silent))
-      }
+  const removeActivationListeners = () => {
+    ACTIVATION_EVENTS.forEach((type) =>
+      document.removeEventListener(type, onFirstInteraction)
+    )
+  }
 
-      updateButtonState()
+  const play = () => {
+    if (started) return
+    if (!bgm.getAttribute('src')) bgm.src = BGM_SRC
 
-      // ตั้งค่าการคลิกปุ่ม
-      audioToggle.addEventListener('click', function () {
-        window.toggleBGM()
-        updateButtonState()
+    bgm
+      .play()
+      .then(() => {
+        started = true
+        removeActivationListeners()
       })
+      .catch(() => {
+        // Not allowed yet; keep listening for the next interaction
+      })
+  }
 
-      // ติดตามการเปลี่ยนแปลงสถานะจากที่อื่น (เริ่มเล่น, หยุด, ปิด/เปิดเสียง)
-      bgmGlobal.addEventListener('play', updateButtonState)
-      bgmGlobal.addEventListener('pause', updateButtonState)
-      bgmGlobal.addEventListener('volumechange', updateButtonState)
+  function onFirstInteraction(event: Event) {
+    // The toggle button handles its own presses. Otherwise touchend would start
+    // the music and the following click on the button would mute it right away.
+    if (event.target instanceof Element && event.target.closest('#audio-toggle')) {
+      return
     }
-  })
+    play()
+  }
+
+  const toggle = () => {
+    // Before playback has ever started, a press means "turn the music on"
+    if (!started && bgm.paused) {
+      bgm.muted = false
+      play()
+    } else {
+      bgm.muted = !bgm.muted
+    }
+    updateButtonState()
+  }
+
+  ACTIVATION_EVENTS.forEach((type) =>
+    document.addEventListener(type, onFirstInteraction)
+  )
+  toggleButton?.addEventListener('click', toggle)
+
+  // Keep the icon in sync with what is actually audible
+  bgm.addEventListener('play', updateButtonState)
+  bgm.addEventListener('pause', updateButtonState)
+  bgm.addEventListener('volumechange', updateButtonState)
+  updateButtonState()
 </script>

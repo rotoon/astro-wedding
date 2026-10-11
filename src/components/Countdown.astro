@@ -1,3 +1,14 @@
+---
+import { ceremony } from '../data/wedding'
+
+const units = [
+  { id: 'days', label: 'Days' },
+  { id: 'hours', label: 'Hours' },
+  { id: 'minutes', label: 'Mins' },
+  { id: 'seconds', label: 'Secs' },
+]
+---
+
 <!-- Countdown Section -->
 <section class='countdown-section'>
   <div class='countdown-overlay'></div>
@@ -6,86 +17,66 @@
     <div
       id='countdown'
       class='countdown-display'
+      data-target={ceremony.start}
     >
-      <div class='countdown-unit'>
-        <div
-          class='countdown-value'
-          id='days'
-        >
-          00
-        </div>
-        <div class='countdown-label'>Days</div>
-      </div>
-      <div class='countdown-separator'>:</div>
-      <div class='countdown-unit'>
-        <div
-          class='countdown-value'
-          id='hours'
-        >
-          00
-        </div>
-        <div class='countdown-label'>Hours</div>
-      </div>
-      <div class='countdown-separator'>:</div>
-      <div class='countdown-unit'>
-        <div
-          class='countdown-value'
-          id='minutes'
-        >
-          00
-        </div>
-        <div class='countdown-label'>Mins</div>
-      </div>
-      <div class='countdown-separator'>:</div>
-      <div class='countdown-unit'>
-        <div
-          class='countdown-value'
-          id='seconds'
-        >
-          00
-        </div>
-        <div class='countdown-label'>Secs</div>
-      </div>
+      {
+        units.map((unit, index) => (
+          <>
+            {index > 0 && <div class='countdown-separator'>:</div>}
+            <div class='countdown-unit'>
+              <div
+                class='countdown-value'
+                id={unit.id}
+              >
+                00
+              </div>
+              <div class='countdown-label'>{unit.label}</div>
+            </div>
+          </>
+        ))
+      }
     </div>
   </div>
 </section>
 
-<script is:inline>
-  const weddingDate = new Date('2025-05-25T08:39:00+07:00').getTime()
-  const countdownElements = {
+<script>
+  const SECOND = 1000
+  const MINUTE = 60 * SECOND
+  const HOUR = 60 * MINUTE
+  const DAY = 24 * HOUR
+
+  const countdown = document.getElementById('countdown')
+  const target = new Date(countdown?.dataset.target ?? '').getTime()
+  const fields = {
     days: document.getElementById('days'),
     hours: document.getElementById('hours'),
     minutes: document.getElementById('minutes'),
     seconds: document.getElementById('seconds'),
   }
 
-  const updateCountdown = () => {
-    const now = new Date().getTime()
-    const distance = weddingDate - now
+  const pad = (value: number) => String(value).padStart(2, '0')
+
+  const update = () => {
+    const distance = target - Date.now()
 
     if (distance < 0) {
-      clearInterval(countdownTimer)
-      document.getElementById('countdown').innerHTML =
-        "<div class='countdown-message'>The wedding is happening now!</div>"
+      clearInterval(timer)
+      if (countdown) {
+        countdown.innerHTML =
+          "<div class='countdown-message'>The wedding is happening now!</div>"
+      }
       return
     }
 
     requestAnimationFrame(() => {
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24))
-      const hours = Math.floor(
-        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      )
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000)
-
-      countdownElements.days.innerHTML = String(days).padStart(2, '0')
-      countdownElements.hours.innerHTML = String(hours).padStart(2, '0')
-      countdownElements.minutes.innerHTML = String(minutes).padStart(2, '0')
-      countdownElements.seconds.innerHTML = String(seconds).padStart(2, '0')
+      if (fields.days) fields.days.textContent = pad(Math.floor(distance / DAY))
+      if (fields.hours) fields.hours.textContent = pad(Math.floor((distance % DAY) / HOUR))
+      if (fields.minutes) fields.minutes.textContent = pad(Math.floor((distance % HOUR) / MINUTE))
+      if (fields.seconds) fields.seconds.textContent = pad(Math.floor((distance % MINUTE) / SECOND))
     })
   }
 
-  // Start the timer before the first update so updateCountdown can clear it
-  const countdownTimer = setInterval(updateCountdown, 1000)
-  updateCountdown()
+  // Start the timer before the first update so update() can clear it
+  const timer = setInterval(update, SECOND)
+  update()
 </script>
