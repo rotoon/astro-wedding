@@ -409,8 +409,10 @@ const eventSchema = {
     <script is:inline>
       // เพิ่มฟังก์ชันที่จะพยายามเล่นเพลงทันทีที่มีการโต้ตอบแรกกับเว็บไซต์
       document.addEventListener('DOMContentLoaded', function () {
-        // สร้าง Audio element โดยตรงในระดับสูง
-        const bgmGlobal = new Audio('/bgm/bgm.MP3')
+        // สร้าง Audio element โดยยังไม่ใส่ src เพื่อไม่ให้โหลดไฟล์เพลงตอนเปิดหน้า
+        // ไฟล์จะเริ่มโหลดเมื่อแขกแตะหน้าจอครั้งแรกใน playBGM
+        const bgmGlobal = new Audio()
+        bgmGlobal.preload = 'none'
         bgmGlobal.id = 'bgm-global'
         bgmGlobal.loop = true
         bgmGlobal.volume = 0.6
@@ -426,6 +428,10 @@ const eventSchema = {
         const playBGM = function () {
           if (window.bgmStarted) return
 
+          if (!bgmGlobal.getAttribute('src')) {
+            bgmGlobal.src = '/bgm/bgm.MP3'
+          }
+
           try {
             bgmGlobal
               .play()
@@ -435,9 +441,8 @@ const eventSchema = {
 
                 // เมื่อเพลงเริ่มเล่นแล้ว ลบ event listener ทั้งหมดออก
                 document.removeEventListener('click', playBGM)
-                document.removeEventListener('touchstart', playBGM)
+                document.removeEventListener('touchend', playBGM)
                 document.removeEventListener('keydown', playBGM)
-                document.removeEventListener('scroll', playBGM)
               })
               .catch((err) => {
                 // หากไม่สามารถเล่นเพลงได้ ปล่อยให้ event listener ยังทำงานต่อไป
@@ -448,11 +453,11 @@ const eventSchema = {
           }
         }
 
-        // เพิ่ม event listener สำหรับทุกการโต้ตอบกับเว็บไซต์
+        // ฟังเฉพาะ event ที่เบราว์เซอร์นับเป็นการโต้ตอบของผู้ใช้ (อนุญาตให้เล่นเสียงได้)
+        // scroll และ touchstart ไม่นับ จึงไม่ใช้ เพื่อไม่ให้โหลดไฟล์ทั้งที่ยังเล่นไม่ได้
         document.addEventListener('click', playBGM)
-        document.addEventListener('touchstart', playBGM)
+        document.addEventListener('touchend', playBGM)
         document.addEventListener('keydown', playBGM)
-        document.addEventListener('scroll', playBGM)
 
         // เปิดให้ component อื่นๆ เข้าถึงตัวเล่นเพลงได้
         window.getBGM = function () {
