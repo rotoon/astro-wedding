@@ -1,14 +1,8 @@
 ---
-// Read images from the img/slide folder
-import fs from 'node:fs'
-import path from 'node:path'
+import { listPublicImages, shuffle } from '../utils/images'
 
-// Read all image files from the slide folder
-const slideDir = path.join(process.cwd(), 'public/img/slide')
-const galleryImages = fs
-  .readdirSync(slideDir)
-  .filter((file) => /\.(webp|jpe?g|png)$/i.test(file))
-  .sort(() => Math.random() - 0.5) // Random sort instead of alphabetical sort
+// Every image in public/img/slide, in a new random order on each build
+const galleryImages = shuffle(listPublicImages('img/slide'))
 ---
 
 <!-- Photo Gallery -->
@@ -22,11 +16,11 @@ const galleryImages = fs
   <div class='swiper-container'>
     <div class='swiper-wrapper'>
       {
-        galleryImages.map((filename, index) => (
+        galleryImages.map((src, index) => (
           <div class='swiper-slide'>
             <div class='gallery-image'>
               <img
-                src={`/img/slide/${filename}`}
+                src={src}
                 alt={`Som & Toon, photo ${index + 1} of ${galleryImages.length}`}
                 loading='lazy'
                 decoding='async'
@@ -43,77 +37,6 @@ const galleryImages = fs
     <div class='swiper-button-next'></div>
   </div>
 </section>
-
-<style>
- 
-
-
-
-  /* Custom pagination positioning */
-  
-
-  
-
-
-
-  /* Mobile specific adjustments */
-  @media (max-width: 768px) {
-    .swiper-pagination {
-      bottom: 0;
-      margin-top: 20px;
-      padding-bottom: 15px;
-    }
-
-    .swiper-pagination-bullet {
-      width: 12px;
-      height: 12px;
-      margin: 0 5px;
-    }
-
-    .gallery-controls {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 10px;
-      /* margin-top: 10px; */
-      z-index: 10;
-      pointer-events: none; /* Allow touches to pass through to the swiper */
-    }
-
-    .swiper-button-prev,
-    .swiper-button-next {
-      position: relative;
-      width: 40px;
-      height: 40px;
-      margin: 0;
-      left: auto;
-      right: auto;
-      top: auto;
-      background-color: rgba(255, 255, 255, 0.8);
-      border-radius: 50%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      pointer-events: auto; /* Re-enable touch events on buttons */
-    }
-
-    .swiper-button-prev {
-      left: -20px;
-    }
-
-    .swiper-button-next {
-      right: 20px;
-    }
-
-    .swiper-button-prev:after,
-    .swiper-button-next:after {
-      font-size: 18px;
-      color: #333;
-    }
-  }
-</style>
 
 <script>
   import Swiper from 'swiper'

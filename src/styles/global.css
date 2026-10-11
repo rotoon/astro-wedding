@@ -1,63 +1,5 @@
 /* ======== Base Settings & Variables ========= */
 
-/* Audio Control */
-.audio-control {
-  position: fixed;
-  bottom: 25px;
-  right: 25px;
-  z-index: 9999; /* Higher z-index than global */
-}
-
-.audio-btn {
-  width: 50px; /* Larger than global */
-  height: 50px; /* Larger than global */
-  border: 2px solid var(--secondary-color); /* Added border */
-  animation: pulse 2s infinite; /* Added animation */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  color: var(--light-color);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.audio-btn:hover {
-  transform: scale(1.1);
-  background-color: var(--accent-color);
-}
-
-.audio-btn svg {
-  width: 24px; /* Larger than global */
-  height: 24px; /* Larger than global */
-}
-
-.audio-off {
-  display: none;
-}
-
-.audio-btn.muted .audio-on {
-  display: none;
-}
-
-.audio-btn.muted .audio-off {
-  display: block;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(123, 92, 67, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(123, 92, 67, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(123, 92, 67, 0);
-  }
-}
 :root {
   /* Main Colors - Selected from English style photos */
   --primary-color: #7b5c43; /* Brown, groom's suit color */
@@ -67,11 +9,9 @@
   --light-color: #f6f1ed; /* Light cream */
   --brick-color: #a4563d; /* Brick red, extracted from architecture */
   --gold-color: #d9ba7f; /* Vintage gold */
-  --blue-accent: #86a1b3; /* From sky and London Tower Bridge */
 
   /* Text Colors */
   --text-dark: #372517;
-  --text-light: #f7f4f1;
   --text-muted: #a99385;
 
   /* Font Settings */
@@ -80,8 +20,6 @@
   --body-font: 'Montserrat', sans-serif;
 
   /* Animation Timing */
-  --transition-slow: 0.8s;
-  --transition-medium: 0.5s;
   --transition-fast: 0.3s;
 
   /* Size Settings */
@@ -91,15 +29,6 @@
 
   /* Performance optimization variables */
   --transform-gpu: translateZ(0);
-  --backface-hidden: 'backface-visibility: hidden';
-  --will-change-transform: 'will-change: transform';
-  --will-change-opacity: 'will-change: opacity';
-  --will-change-transform-opacity: 'will-change: transform, opacity';
-  --contain-layout: 'contain: layout';
-  --contain-paint: 'contain: paint';
-  --contain-style: 'contain: style';
-  --contain-content: 'contain: content';
-  --contain-all: 'contain: layout style paint';
 }
 
 /* Reset and Base Styles */
@@ -131,10 +60,7 @@ body {
 
 h1,
 h2,
-h3,
-h4,
-h5,
-h6 {
+h3 {
   font-family: var(--heading-font);
   font-weight: 400;
   line-height: 1.2;
@@ -169,6 +95,64 @@ button:focus-visible,
 [role='button']:focus-visible {
   outline: 2px solid var(--gold-color);
   outline-offset: 3px;
+}
+
+/* ========= Audio Control ========= */
+.audio-control {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 9999;
+}
+
+.audio-btn {
+  width: 50px;
+  height: 50px;
+  animation: pulse 2s infinite;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  color: var(--light-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.audio-btn:hover {
+  transform: scale(1.1);
+  background-color: var(--accent-color);
+}
+
+.audio-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.audio-off {
+  display: none;
+}
+
+.audio-btn.muted .audio-on {
+  display: none;
+}
+
+.audio-btn.muted .audio-off {
+  display: block;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(123, 92, 67, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(123, 92, 67, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(123, 92, 67, 0);
+  }
 }
 
 /* ========= Noise and Texture Effects ========= */
@@ -599,19 +583,6 @@ button:focus-visible,
   transform: translateY(0);
 }
 
-.reveal-text {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: opacity, transform;
-}
-
-.reveal-text.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 .reveal-item {
   opacity: 0;
   transform: translateY(20px);
@@ -762,18 +733,7 @@ button:focus-visible,
   }
 }
 
-/* --- Story Section --- */
-.story-section {
-  padding: var(--section-spacing) var(--container-padding);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><path d="M0,200 C100,100 300,300 400,200" stroke="%23D9BA7F" stroke-width="0.5" fill="none" opacity="0.2"/></svg>');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-}
-
+/* --- Shared decorations (section lines, flourishes, accent shapes) --- */
 .section-decorative-line {
   width: 100px;
   height: 3px;
@@ -784,11 +744,6 @@ button:focus-visible,
     transparent
   );
   margin: 0 auto 3rem;
-}
-
-.story-heading {
-  position: relative;
-  margin-bottom: 2rem;
 }
 
 .decorative-flourish {
@@ -809,37 +764,6 @@ button:focus-visible,
   stroke: var(--accent-color);
   stroke-width: 1px;
   fill: none;
-}
-
-.story-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.elegant-text {
-  font-family: var(--secondary-font);
-  font-size: 1.2rem;
-  line-height: 1.8;
-  color: var(--text-dark);
-  font-weight: 300;
-}
-
-.highlight-text {
-  color: var(--brick-color);
-  font-weight: 600;
-  position: relative;
-  display: inline-block;
-}
-
-.highlight-text::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--brick-color);
-  opacity: 0.5;
 }
 
 .accent-shape {
@@ -884,121 +808,6 @@ button:focus-visible,
   background-color: var(--dark-color);
   position: relative;
   contain: content;
-}
-
-/* --- Timeline Section --- */
-.timeline-section {
-  padding: var(--section-spacing) var(--container-padding);
-  background-color: var(--light-color);
-  position: relative;
-  overflow: hidden;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="1" fill="%237B5C43" opacity="0.05"/></svg>');
-  background-size: 20px 20px;
-}
-
-.timeline-container {
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.timeline-title {
-  margin-bottom: 3rem;
-}
-
-.timeline {
-  position: relative;
-  padding: 30px 0;
-}
-
-.timeline::before {
-  content: '';
-  position: absolute;
-  height: 100%;
-  width: 2px;
-  background-color: var(--primary-color);
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0.3;
-}
-
-.timeline-item {
-  margin-bottom: 70px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.timeline-item:last-child {
-  margin-bottom: 0;
-}
-
-.timeline-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  position: relative;
-  z-index: 2;
-  margin-bottom: 15px;
-  border: 4px solid var(--light-color);
-  box-shadow: 0 0 0 2px var(--primary-color);
-}
-
-.timeline-date {
-  font-family: var(--secondary-font);
-  color: var(--primary-color);
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  padding: 5px 15px;
-  background-color: rgba(123, 92, 67, 0.1);
-  border-radius: 20px;
-}
-
-.timeline-content {
-  max-width: 80%;
-  padding: 20px;
-  background-color: white;
-  border-radius: var(--border-radius);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-}
-
-.timeline-content h3 {
-  font-family: var(--heading-font);
-  font-size: 1.4rem;
-  margin-bottom: 10px;
-  color: var(--primary-color);
-}
-
-.timeline-content p {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-@media (max-width: 767px) {
-  .timeline::before {
-    left: 30px;
-  }
-
-  .timeline-item {
-    align-items: flex-start;
-    padding-left: 60px;
-  }
-
-  .timeline-dot {
-    position: absolute;
-    left: 30px;
-    top: 0;
-    transform: translateX(-50%);
-    margin-bottom: 0;
-  }
-
-  .timeline-content {
-    max-width: 100%;
-  }
 }
 
 .gallery-title-container {
@@ -1098,25 +907,6 @@ button:focus-visible,
   background: linear-gradient(to top, rgba(48, 31, 18, 0.8), transparent);
 }
 
-.image-caption {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  color: var(--light-color);
-  font-size: 0.9rem;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  z-index: 2;
-  padding: 0 10px;
-}
-
-.swiper-slide-active .image-caption {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 .gallery-controls {
   display: flex;
   justify-content: center;
@@ -1179,11 +969,6 @@ button:focus-visible,
 }
 
 @media (max-width: 768px) {
-  .swiper-pagination {
-    bottom: 0;
-    margin-top: 20px;
-  }
-
   .gallery-image {
     height: 500px;
   }
@@ -1194,34 +979,47 @@ button:focus-visible,
     margin: 0 5px;
   }
 
-  /* Mobile-specific controls positioning */
-  .gallery-controls {
+  /* Arrows sit over the slides at the edges. The .gallery-section prefix gives
+     these rules priority over Swiper's own navigation styles. */
+  .gallery-section .swiper-pagination {
+    bottom: 0;
+    margin-top: 20px;
+    padding-bottom: 15px;
+  }
+
+  .gallery-section .gallery-controls {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     width: 100%;
+    justify-content: space-between;
+    align-items: center;
     padding: 0 10px;
-    pointer-events: none;
+    z-index: 10;
+    pointer-events: none; /* Let swipes reach the slider */
   }
 
-  .swiper-button-prev,
-  .swiper-button-next {
+  .gallery-section .swiper-button-prev,
+  .gallery-section .swiper-button-next {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    top: auto;
+    /* Stays white on hover too: on touch screens :hover sticks after a tap */
     background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     pointer-events: auto;
   }
 
-  .swiper-button-prev {
+  .gallery-section .swiper-button-prev {
     left: -20px;
+    right: auto;
   }
 
-  .swiper-button-next {
+  .gallery-section .swiper-button-next {
+    left: auto;
     right: 20px;
-  }
-
-  .swiper-button-prev:after,
-  .swiper-button-next:after {
-    font-size: 18px;
-    color: #333;
   }
 }
 
@@ -1281,6 +1079,7 @@ button:focus-visible,
   width: 100%;
   height: 100%;
   object-fit: cover;
+  background-color: #eee; /* placeholder while the photo loads */
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -1493,28 +1292,6 @@ button:focus-visible,
   color: var(--text-muted);
 }
 
-.rsvp-button {
-  display: inline-block;
-  background-color: var(--primary-color);
-  color: var(--light-color);
-  padding: 0.6rem 1.2rem;
-  border-radius: 30px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  margin-top: 0.8rem;
-  transition: background-color var(--transition-fast) ease,
-    transform var(--transition-fast) ease;
-  transform: var(--transform-gpu);
-  will-change: transform;
-  contain: layout style paint;
-}
-
-.rsvp-button:hover {
-  background-color: var(--accent-color);
-  transform: translateY(-2px);
-}
-
 /* --- Map Section --- */
 .map-section {
   padding: calc(var(--section-spacing) * 0.8) var(--container-padding);
@@ -1596,6 +1373,9 @@ button:focus-visible,
 
 .map-nav-btn {
   display: inline-block;
+  /* Same box as the <button> it replaced */
+  line-height: normal;
+  vertical-align: middle;
   background-color: var(--primary-color);
   color: var(--light-color);
   padding: 0.6rem 1.2rem;
@@ -1613,118 +1393,6 @@ button:focus-visible,
 .map-nav-btn:hover {
   background-color: var(--accent-color);
   transform: translateY(-2px);
-}
-
-/* --- Wishes Wall --- */
-.wishes-section {
-  padding: var(--section-spacing) var(--container-padding);
-  position: relative;
-  overflow: hidden;
-  background-color: var(--secondary-color);
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="1" fill="%23B3896B" opacity="0.3"/></svg>');
-  background-size: 20px 20px;
-  contain: content;
-}
-
-.wishes-container {
-  max-width: 800px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-}
-
-.wishes-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.wishes-title-container {
-  position: relative;
-  display: inline-block;
-}
-
-.wishes-title {
-  margin-bottom: 0.5rem;
-}
-
-.wishes-subtitle {
-  font-family: var(--body-font);
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
-}
-
-.wishes-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-
-.wish-card {
-  background-color: white;
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  position: relative;
-  transition: transform var(--transition-fast) ease,
-    box-shadow var(--transition-fast) ease;
-  transform: var(--transform-gpu);
-  will-change: transform;
-  contain: layout style paint;
-}
-
-.wish-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-.wish-content p {
-  font-family: var(--body-font);
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-  font-style: italic;
-}
-
-.wish-author {
-  font-family: var(--body-font);
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-align: right;
-}
-
-.send-wish-container {
-  text-align: center;
-}
-
-.send-wish-btn {
-  display: inline-block;
-  background-color: var(--primary-color);
-  color: var(--light-color);
-  padding: 0.8rem 1.5rem;
-  border-radius: 30px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  transition: background-color var(--transition-fast) ease,
-    transform var(--transition-fast) ease;
-  border: none;
-  cursor: pointer;
-  transform: var(--transform-gpu);
-  will-change: transform;
-  contain: layout style paint;
-}
-
-.send-wish-btn:hover {
-  background-color: var(--accent-color);
-  transform: translateY(-2px);
-}
-
-.wishes-bg-accent {
-  display: none;
 }
 
 /* --- Footer --- */
@@ -1783,266 +1451,6 @@ button:focus-visible,
   letter-spacing: 0.05em;
 }
 
-/* ========= Modal Styles ========= */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9999;
-  display: none;
-  overflow-y: auto;
-  contain: layout style paint;
-}
-
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(48, 31, 18, 0.85);
-  backdrop-filter: blur(5px);
-  z-index: 1;
-}
-
-.modal-container {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
-  padding: 3rem 1rem;
-}
-
-.modal-content {
-  background-color: white;
-  border-radius: var(--border-radius);
-  position: relative;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: modalFadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  transform: var(--transform-gpu);
-  will-change: transform, opacity;
-  contain: layout style paint;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 1.8rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color var(--transition-fast) ease;
-  background: none;
-  border: none;
-  line-height: 1;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3;
-}
-
-.modal-close:hover {
-  color: var(--primary-color);
-}
-
-.modal-header {
-  padding: 2rem 2rem 1rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(123, 92, 67, 0.1);
-}
-
-.modal-title {
-  font-family: var(--heading-font);
-  font-size: 1.8rem;
-  font-weight: 400;
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
-}
-
-.modal-subtitle {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-/* RSVP Form */
-.rsvp-form {
-  padding: 2rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--text-dark);
-}
-
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid rgba(123, 92, 67, 0.2);
-  border-radius: var(--border-radius);
-  font-family: var(--body-font);
-  font-size: 1rem;
-  transition: border-color var(--transition-fast) ease;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-.attendance-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.attendance-option {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.attendance-option input {
-  margin-right: 0.8rem;
-  width: auto;
-}
-
-.option-text {
-  font-size: 0.95rem;
-}
-
-.number-input {
-  display: flex;
-  align-items: center;
-  max-width: 150px;
-}
-
-.number-input button {
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(123, 92, 67, 0.1);
-  border-radius: 50%;
-  font-size: 1.2rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color var(--transition-fast) ease;
-}
-
-.number-input button:hover {
-  background-color: var(--accent-color);
-  color: white;
-}
-
-.number-input input {
-  text-align: center;
-  border: none;
-  width: 50px;
-  font-size: 1.2rem;
-  background: transparent;
-}
-
-.submit-btn {
-  display: block;
-  width: 100%;
-  padding: 0.8rem;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color var(--transition-fast) ease;
-}
-
-.submit-btn:hover {
-  background-color: var(--accent-color);
-}
-
-/* Wishes Form */
-.wish-form {
-  padding: 2rem;
-}
-
-/* Thank You Modal */
-.thanks-modal-content {
-  padding: 3rem 2rem;
-  text-align: center;
-}
-
-.thank-you-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: rgba(123, 92, 67, 0.1);
-  color: var(--primary-color);
-}
-
-.thank-you-title {
-  font-family: var(--heading-font);
-  font-size: 1.8rem;
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-}
-
-.thank-you-text {
-  font-size: 1rem;
-  color: var(--text-muted);
-  margin-bottom: 2rem;
-}
-
-.thank-you-btn {
-  display: inline-block;
-  padding: 0.8rem 2rem;
-  background-color: var(--primary-color);
-  color: white;
-  border-radius: 30px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color var(--transition-fast) ease,
-    transform var(--transition-fast) ease;
-}
-
-.thank-you-btn:hover {
-  background-color: var(--accent-color);
-  transform: translateY(-2px);
-}
-
 /* ========= Responsive Design ========= */
 @media (max-width: 767px) {
   :root {
@@ -2069,34 +1477,12 @@ button:focus-visible,
     grid-template-columns: 1fr;
   }
 
-  .wishes-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .gallery-image {
-    height: 500px;
-  }
-
-  .elegant-text {
-    font-size: 1rem;
-  }
-
   .countdown-value {
     font-size: 2rem;
   }
 
   .countdown-unit {
     min-width: 60px;
-  }
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  .wishes-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .wish-card-3 {
-    grid-column: span 2;
   }
 }
 
@@ -2115,10 +1501,6 @@ button:focus-visible,
 
   .section-title {
     font-size: 2.8rem;
-  }
-
-  .elegant-text {
-    font-size: 1.3rem;
   }
 }
 
@@ -2229,14 +1611,17 @@ button:focus-visible,
   max-height: 70vh;
   margin: 0 auto;
   object-fit: contain;
+  opacity: 0; /* faded in by the script once loaded */
+  transition: opacity 0.3s ease;
 }
 
-.image-modal-caption {
-  padding: 10px 15px;
-  text-align: center;
-  color: var(--text-dark);
-  font-style: italic;
-  font-size: 0.9rem;
+.image-modal-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 14px;
 }
 
 .image-modal-footer {

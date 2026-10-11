@@ -1,6 +1,10 @@
+---
+import { couple } from '../data/wedding'
+---
+
 <div class='loading-screen'>
   <div class='loading-container'>
-    <div class='loading-logo'>SOM & TOON</div>
+    <div class='loading-logo'>{couple.title}</div>
     <div class='loading-bar-container'>
       <div class='loading-bar'></div>
     </div>
@@ -26,85 +30,80 @@
   }
 </style>
 
-<script is:inline>
-  document.addEventListener('DOMContentLoaded', function () {
-    const percentElement = document.getElementById('loading-percent')
-    const loadingScreen = document.querySelector('.loading-screen')
-    const mainContainer = document.querySelector('.main-container')
+<script>
+  import { markIntroDone } from '../scripts/intro'
 
-    // Prevent scrolling during loading
-    document.body.classList.add('loading')
+  // Show the intro for at least MIN_LOADING_TIME, wait for the hero image,
+  // but never keep guests waiting longer than MAX_LOADING_TIME
+  const MIN_LOADING_TIME = 1500
+  const MAX_LOADING_TIME = 3000
+  const PROGRESS_INTERVAL = 100 // Update the percentage every 100ms
+  const PROGRESS_INCREMENT = 100 / (MIN_LOADING_TIME / PROGRESS_INTERVAL)
+  const FADE_DELAY = 300 // Let the loading screen start fading before showing content
 
-    // Force scroll to top
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  const percentElement = document.getElementById('loading-percent')
+  const loadingScreen = document.querySelector('.loading-screen')
+  const mainContainer = document.querySelector('.main-container')
 
-    // Show the intro for at least MIN_LOADING_TIME, wait for the hero image,
-    // but never keep guests waiting longer than MAX_LOADING_TIME
-    const MIN_LOADING_TIME = 1500
-    const MAX_LOADING_TIME = 3000
-    const PROGRESS_INTERVAL = 100 // Update the percentage every 100ms
-    const PROGRESS_INCREMENT = 100 / (MIN_LOADING_TIME / PROGRESS_INTERVAL)
+  let progress = 0
+  let heroReady = false
+  let minTimeElapsed = false
+  let hidden = false
 
-    let progress = 0
-    let heroReady = false
-    let minTimeElapsed = false
-    let hidden = false
+  const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
 
-    function updateProgress() {
-      if (hidden) return
+  const updateProgress = () => {
+    if (hidden) return
 
-      // Hold at 95% until the hero image is ready
-      progress = Math.min(progress + PROGRESS_INCREMENT, heroReady ? 100 : 95)
+    // Hold at 95% until the hero image is ready
+    progress = Math.min(progress + PROGRESS_INCREMENT, heroReady ? 100 : 95)
+    if (percentElement) percentElement.textContent = `${Math.round(progress)}%`
 
-      if (percentElement) {
-        percentElement.textContent = Math.round(progress) + '%'
-      }
+    setTimeout(updateProgress, PROGRESS_INTERVAL)
+  }
 
-      setTimeout(updateProgress, PROGRESS_INTERVAL)
-    }
+  const hideLoadingScreen = () => {
+    if (hidden) return
+    hidden = true
 
-    function hideLoadingScreen() {
-      if (hidden) return
-      hidden = true
+    if (percentElement) percentElement.textContent = '100%'
+    loadingScreen?.classList.add('hidden')
 
-      if (percentElement) {
-        percentElement.textContent = '100%'
-      }
+    setTimeout(() => {
+      mainContainer?.classList.add('visible')
+      document.body.classList.remove('loading')
+      document.body.classList.add('loaded')
+      scrollToTop()
+      markIntroDone()
+    }, FADE_DELAY)
+  }
 
-      loadingScreen?.classList.add('hidden')
+  const maybeHide = () => {
+    if (heroReady && minTimeElapsed) hideLoadingScreen()
+  }
 
-      // Show main content with a slight delay for smooth transition
-      setTimeout(function () {
-        mainContainer?.classList.add('visible')
-        document.body.classList.remove('loading')
-        document.body.classList.add('loaded')
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-      }, 300)
-    }
+  // Prevent scrolling during loading
+  document.body.classList.add('loading')
+  scrollToTop()
 
-    function maybeHide() {
-      if (heroReady && minTimeElapsed) hideLoadingScreen()
-    }
-
-    // The hero is preloaded in <head>, so this usually resolves from cache
-    const hero = new Image()
-    hero.src = '/img/hero.webp'
-    hero
-      .decode()
-      .catch(function () {})
-      .then(function () {
-        heroReady = true
-        maybeHide()
-      })
-
-    setTimeout(function () {
-      minTimeElapsed = true
+  // The hero is preloaded in <head>, so this usually resolves from cache
+  const hero = new Image()
+  hero.src = '/img/hero.webp'
+  hero
+    .decode()
+    .catch(() => {})
+    .then(() => {
+      heroReady = true
       maybeHide()
-    }, MIN_LOADING_TIME)
+    })
 
-    // Failsafe: never block the page longer than MAX_LOADING_TIME
-    setTimeout(hideLoadingScreen, MAX_LOADING_TIME)
+  setTimeout(() => {
+    minTimeElapsed = true
+    maybeHide()
+  }, MIN_LOADING_TIME)
 
-    updateProgress()
-  })
+  // Failsafe: never block the page longer than MAX_LOADING_TIME
+  setTimeout(hideLoadingScreen, MAX_LOADING_TIME)
+
+  updateProgress()
 </script>

@@ -17,6 +17,7 @@ Requires Node.js 22.12 or newer (even-numbered releases), as declared in `packag
 | `pnpm dev`     | Start the dev server at `localhost:4321`      |
 | `pnpm build`   | Build the static site to `./dist/`            |
 | `pnpm preview` | Preview the production build locally          |
+| `pnpm check`   | Type-check `.astro` and `.ts` files           |
 
 ## Project structure
 
@@ -29,14 +30,27 @@ public/
 │   ├── sweet/           "Sweet Moments" mosaic — numbered 1.webp, 2.webp, … (shown in number order)
 │   └── og-cover.webp    Social share image (opengraph.jpg is the JPEG copy)
 src/
-├── layouts/Layout.astro SEO/OG meta, JSON-LD, scroll-reveal observer, background music
+├── data/wedding.ts      Names, date, venue, site URL — edit here, every section reads from it
+├── layouts/Layout.astro <head>: SEO/OG meta, JSON-LD, fonts, critical CSS
 ├── pages/
 │   ├── index.astro      Page composition
 │   ├── sitemap.xml.ts   Generates /sitemap.xml
 │   └── opengraph.jpg.ts Serves /opengraph.jpg
-├── components/          One component per section (Hero, Bio, PhotoGallery, PhotoMosaic, Countdown, …)
+├── components/          One component per section, each with its own <script> if it needs one
+├── scripts/
+│   ├── intro.ts         "Loading screen finished" signal
+│   └── reveal.ts        Scroll-reveal for .reveal-title / .reveal-item
+├── utils/
+│   ├── images.ts        Lists images in public/ at build time, shuffle()
+│   └── throttle.ts      requestAnimationFrame throttle
 └── styles/global.css    All shared styles
 ```
+
+## Changing the details
+
+Names, nicknames, birthdays, the ceremony time, the venue and the site URL all live in
+[`src/data/wedding.ts`](src/data/wedding.ts). Display strings such as "Sunday, May 25,
+2025", "08:39 AM" and "25 · 05 · 2025" are derived from `ceremony.start` in Thai time.
 
 ## Adding photos
 

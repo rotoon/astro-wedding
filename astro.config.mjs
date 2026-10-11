@@ -1,9 +1,10 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
+import { site } from './src/data/wedding'
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://www.ststarttogether.com',
+  site: site.url,
 
   // HTML-aware whitespace compression (Astro 7's default is 'jsx', which drops
   // spaces between inline elements)

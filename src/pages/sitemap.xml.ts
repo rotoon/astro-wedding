@@ -1,54 +1,34 @@
 import type { APIRoute } from 'astro'
 
-export const GET: APIRoute = async function GET({ site }) {
+const pages = [{ path: '/', priority: 1.0, changeFreq: 'monthly' }]
+
+export const GET: APIRoute = ({ site }) => {
   if (!site) {
-    return new Response(
-      'Site configuration is required to generate the sitemap',
-      {
-        status: 500,
-      }
-    )
+    return new Response('`site` must be set in astro.config.mjs', { status: 500 })
   }
 
-  // Generate the XML sitemap with the content type header
-  return new Response(generateSitemap(site), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/xml',
-      'Cache-Control': 'max-age=3600, public',
-    },
-  })
-}
-
-function generateSitemap(site: URL) {
-  // Define your site's URLs and their metadata
-  const pages = [
-    {
-      url: '/',
-      lastMod: new Date().toISOString(),
-      priority: 1.0,
-      changeFreq: 'monthly',
-    },
-  ]
-
-  // Generate the XML header
-  let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`
-
-  // Add each page to the sitemap
-  pages.forEach((page) => {
-    xml += `
+  const lastMod = new Date().toISOString()
+  const urls = pages
+    .map(
+      (page) => `
   <url>
-    <loc>${new URL(page.url, site).href}</loc>
-    <lastmod>${page.lastMod}</lastmod>
+    <loc>${new URL(page.path, site).href}</loc>
+    <lastmod>${lastMod}</lastmod>
     <priority>${page.priority}</priority>
     <changefreq>${page.changeFreq}</changefreq>
   </url>`
-  })
+    )
+    .join('')
 
-  // Close the XML
-  xml += `
-</urlset>`
-
-  return xml
+  return new Response(
+    `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
+</urlset>`,
+    {
+      headers: {
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'max-age=3600, public',
+      },
+    }
+  )
 }

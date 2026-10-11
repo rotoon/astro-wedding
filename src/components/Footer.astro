@@ -1,9 +1,13 @@
+---
+import { couple, coupleNames, dateDisplay } from '../data/wedding'
+---
+
 <footer class='wedding-footer'>
   <div class='footer-decorative-border'></div>
   <div class='footer-content'>
-    <div class='footer-logo'>SOM & TOON</div>
-    <div class='footer-date'>25 · 05 · 2025</div>
+    <div class='footer-logo'>{couple.title}</div>
+    <div class='footer-date'>{dateDisplay.dotted}</div>
     <div class='footer-text'>We can't wait to celebrate with you!</div>
-    <div class='footer-names'>Suchanya & Nuttapon</div>
+    <div class='footer-names'>{coupleNames}</div>
   </div>
 </footer>

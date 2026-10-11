@@ -1,58 +1,109 @@
 ---
 import '../styles/global.css'
+import {
+  ceremony,
+  couple,
+  coupleNames,
+  dateDisplay,
+  site,
+  venue,
+} from '../data/wedding'
 
 interface Props {
   title?: string
   description?: string
-  image?: string
-  canonicalURL?: string
-  dynamicOgImage?: boolean
 }
 
 const {
-  title = 'SOM & TOON Wedding Invitation | May 25, 2025',
-  description = 'Join us for the wedding celebration of Suchanya (Som) & Nuttapon (Toon) on May 25, 2025, at Virgin Ville Sanpatong, Chiangmai, Thailand.',
-  image = '/img/og-cover.webp',
-  canonicalURL = 'https://www.ststarttogether.com/',
-  dynamicOgImage = false,
+  title = `${couple.title} Wedding Invitation | ${dateDisplay.long}`,
+  description = `Join us for the wedding celebration of ${couple.bride.name} (${couple.bride.nickname}) & ${couple.groom.name} (${couple.groom.nickname}) on ${dateDisplay.long}, at ${venue.shortName}.`,
 } = Astro.props
 
-// Wedding details for structured data
-const weddingDate = '2025-05-25T08:39:00+07:00'
-const coupleNames = 'Suchanya & Nuttapon'
+const canonicalURL = site.url
+const ogImageUrl = new URL(site.ogImage, site.url).href
+const ogImageAlt = `${couple.title} ${couple.tagline} ${dateDisplay.dashed}`
+const buildTime = new Date().toISOString()
 
-const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
+// Social / SEO meta tags, rendered in this order
+const metaTags = [
+  { name: 'title', content: title },
+  { name: 'description', content: description },
+  {
+    name: 'keywords',
+    content: `wedding, wedding invitation, ${couple.bride.thaiName}, ${couple.groom.thaiName}, wedding chiangmai, virgin ville, sanpatong`,
+  },
+  { name: 'author', content: coupleNames },
+
+  // Open Graph / Facebook
+  { property: 'og:type', content: 'website' },
+  { property: 'og:url', content: canonicalURL },
+  { property: 'og:title', content: title },
+  { property: 'og:description', content: description },
+  { property: 'og:image', content: ogImageUrl },
+  { property: 'og:locale', content: 'th_TH' },
+  { property: 'og:site_name', content: site.name },
+  { property: 'og:image:width', content: '1200' },
+  { property: 'og:image:height', content: '600' },
+  { property: 'og:image:alt', content: ogImageAlt },
+  { property: 'og:updated_time', content: buildTime },
+  { property: 'article:published_time', content: buildTime },
+
+  // LINE
+  { property: 'line:image', content: ogImageUrl },
+  { property: 'line:title', content: title },
+  { property: 'line:description', content: description },
+
+  // Twitter
+  { name: 'twitter:card', content: 'summary_large_image' },
+  { name: 'twitter:url', content: canonicalURL },
+  { name: 'twitter:title', content: title },
+  { name: 'twitter:description', content: description },
+  { name: 'twitter:image', content: ogImageUrl },
+  { name: 'twitter:image:alt', content: ogImageAlt },
+  { name: 'twitter:creator', content: site.twitterHandle },
+  { name: 'twitter:site', content: site.twitterHandle },
+
+  // Mobile
+  { name: 'theme-color', content: site.themeColor },
+  { name: 'mobile-web-app-capable', content: 'yes' },
+  { name: 'apple-mobile-web-app-capable', content: 'yes' },
+  { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+  { name: 'format-detection', content: 'telephone=no' },
+]
 
 // Event structured data - serialized with JSON.stringify so values are escaped
 const eventSchema = {
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: `Wedding of ${coupleNames}`,
-  startDate: weddingDate,
-  endDate: '2025-05-25T15:00:00+07:00',
+  startDate: ceremony.start,
+  endDate: ceremony.end,
   location: {
     '@type': 'Place',
-    name: 'Wedding Venues at Virgin Ville Sanpatong Chiangmai',
+    name: venue.name,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '194/5 หมู่6 ตำบล ยุหว่า',
-      addressLocality: 'อำเภอสันป่าตอง',
-      addressRegion: 'เชียงใหม่',
-      postalCode: '50120',
-      addressCountry: 'TH',
+      streetAddress: venue.address.street,
+      addressLocality: venue.address.locality,
+      addressRegion: venue.address.region,
+      postalCode: venue.address.postalCode,
+      addressCountry: venue.address.country,
     },
   },
   image: [
     ogImageUrl,
-    new URL('/img/hero.webp', canonicalURL).href,
-    new URL('/img/bride.webp', canonicalURL).href,
+    new URL('/img/hero.webp', site.url).href,
+    new URL(couple.bride.photo, site.url).href,
   ],
-  description: 'SOM & TOON START TOGETHER 25-05-2025',
+  description: ogImageAlt,
   organizer: {
     '@type': 'Person',
     name: coupleNames,
   },
 }
+
+const fontsUrl =
+  'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600&family=Cinzel:wght@400;500&family=Montserrat:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap'
 ---
 
 <!doctype html>
@@ -68,151 +119,12 @@ const eventSchema = {
       type='image/x-icon'
       href='/favicon.ico'
     />
-
-    <!-- Primary Meta Tags -->
     <title>{title}</title>
-    <meta
-      name='title'
-      content={title}
-    />
-    <meta
-      name='description'
-      content={description}
-    />
-    <meta
-      name='keywords'
-      content='wedding, wedding invitation, สุชัญญา, ณัฐพนธ์, wedding chiangmai, virgin ville, sanpatong'
-    />
-    <meta
-      name='author'
-      content={coupleNames}
-    />
+    {metaTags.map((tag) => <meta {...tag} />)}
     <link
       rel='canonical'
       href={canonicalURL}
     />
-
-    <!-- Open Graph / Facebook -->
-    <meta
-      property='og:type'
-      content='website'
-    />
-    <meta
-      property='og:url'
-      content={canonicalURL}
-    />
-    <meta
-      property='og:title'
-      content={title}
-    />
-    <meta
-      property='og:description'
-      content={description}
-    />
-    <meta
-      property='og:image'
-      content={ogImageUrl}
-    />
-    <meta
-      property='og:locale'
-      content='th_TH'
-    />
-    <meta
-      property='og:site_name'
-      content='SOM&TOON START TOGETHER'
-    />
-    <meta
-      property='og:image:width'
-      content='1200'
-    />
-    <meta
-      property='og:image:height'
-      content='600'
-    />
-    <meta
-      property='og:image:alt'
-      content='SOM & TOON START TOGETHER 25-05-2025'
-    />
-    <meta
-      property='og:updated_time'
-      content={new Date().toISOString()}
-    />
-    <meta
-      property='article:published_time'
-      content={new Date().toISOString()}
-    />
-
-    <!-- LINE Specific -->
-    <meta
-      property='line:image'
-      content={ogImageUrl}
-    />
-    <meta
-      property='line:title'
-      content={title}
-    />
-    <meta
-      property='line:description'
-      content={description}
-    />
-
-    <!-- Twitter -->
-    <meta
-      name='twitter:card'
-      content='summary_large_image'
-    />
-    <meta
-      name='twitter:url'
-      content={canonicalURL}
-    />
-    <meta
-      name='twitter:title'
-      content={title}
-    />
-    <meta
-      name='twitter:description'
-      content={description}
-    />
-    <meta
-      name='twitter:image'
-      content={ogImageUrl}
-    />
-    <meta
-      name='twitter:image:alt'
-      content='SOM & TOON START TOGETHER 25-05-2025'
-    />
-    <meta
-      name='twitter:creator'
-      content='@weddingthailand'
-    />
-    <meta
-      name='twitter:site'
-      content='@weddingthailand'
-    />
-
-    <!-- Mobile optimization -->
-    <meta
-      name='theme-color'
-      content='#7b5c43'
-    />
-    <meta
-      name='mobile-web-app-capable'
-      content='yes'
-    />
-    <meta
-      name='apple-mobile-web-app-capable'
-      content='yes'
-    />
-    <meta
-      name='apple-mobile-web-app-status-bar-style'
-      content='default'
-    />
-    <meta
-      name='format-detection'
-      content='telephone=no'
-    />
-
-    <!-- PWA manifest -->
     <link
       rel='manifest'
       href='/manifest.json'
@@ -289,7 +201,7 @@ const eventSchema = {
 
     <!-- Optimized font loading - display=swap ensures text remains visible during font loading -->
     <link
-      href='https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600&family=Cinzel:wght@400;500&family=Montserrat:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap'
+      href={fontsUrl}
       rel='stylesheet'
       media='print'
       onload="this.media='all'"
@@ -297,168 +209,17 @@ const eventSchema = {
     <!-- Font fallback in case the above doesn't load -->
     <noscript>
       <link
-        href='https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600&family=Cinzel:wght@400;500&family=Montserrat:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap'
+        href={fontsUrl}
         rel='stylesheet'
       />
     </noscript>
-
-
-    <!-- Scroll reveal for .reveal-title / .reveal-text / .reveal-item (single observer for the page) -->
-    <script is:inline>
-      // Setup animation observer for reveal effects
-      document.addEventListener('DOMContentLoaded', function () {
-        // Setup animation reveal elements
-        setTimeout(setupAnimationObserver, 2000)
-      })
-
-      function setupAnimationObserver() {
-        if (!('IntersectionObserver' in window)) return
-
-        const observerOptions = {
-          threshold: 0.15,
-          rootMargin: '0px 0px -50px 0px',
-        }
-
-        const handleIntersection = (entries, observer) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return
-
-            // Use requestAnimationFrame for smoother animations
-            requestAnimationFrame(() => {
-              // Add a small staggered delay based on entry index for better visual flow
-              const delay = entry.target.dataset.animationDelay || 0
-              setTimeout(() => {
-                entry.target.classList.add('visible')
-              }, delay)
-            })
-
-            observer.unobserve(entry.target)
-          })
-        }
-
-        const observer = new IntersectionObserver(
-          handleIntersection,
-          observerOptions
-        )
-
-        // Apply staggered animation delays to create better flow
-        const elements = document.querySelectorAll(
-          '.reveal-title, .reveal-text, .reveal-item'
-        )
-
-        // Group elements by sections for staggered effects
-        const sections = {}
-        elements.forEach((el) => {
-          const section = el.closest('section') || 'default'
-          if (!sections[section]) {
-            sections[section] = []
-          }
-          sections[section].push(el)
-        })
-
-        // Apply staggered delays per section
-        Object.values(sections).forEach((sectionElements) => {
-          sectionElements.forEach((el, i) => {
-            el.dataset.animationDelay = i * 80 // 80ms between elements
-            observer.observe(el)
-          })
-        })
-      }
-    </script>
-
-    <!-- Wedding Background Music Autoplay Workaround -->
-    <script is:inline>
-      // เพิ่มฟังก์ชันที่จะพยายามเล่นเพลงทันทีที่มีการโต้ตอบแรกกับเว็บไซต์
-      document.addEventListener('DOMContentLoaded', function () {
-        // สร้าง Audio element โดยยังไม่ใส่ src เพื่อไม่ให้โหลดไฟล์เพลงตอนเปิดหน้า
-        // ไฟล์จะเริ่มโหลดเมื่อแขกแตะหน้าจอครั้งแรกใน playBGM
-        const bgmGlobal = new Audio()
-        bgmGlobal.preload = 'none'
-        bgmGlobal.id = 'bgm-global'
-        bgmGlobal.loop = true
-        bgmGlobal.volume = 0.6
-
-        // เพิ่มลงใน DOM เพื่อให้สามารถควบคุมได้จากที่อื่น
-        bgmGlobal.style.display = 'none'
-        document.body.appendChild(bgmGlobal)
-
-        // เก็บสถานะว่าเพลงเริ่มเล่นแล้วหรือยัง
-        window.bgmStarted = false
-
-        // ฟังก์ชันที่จะเริ่มเล่นเพลง
-        const playBGM = function () {
-          if (window.bgmStarted) return
-
-          if (!bgmGlobal.getAttribute('src')) {
-            bgmGlobal.src = '/bgm/bgm.MP3'
-          }
-
-          try {
-            bgmGlobal
-              .play()
-              .then(() => {
-                window.bgmStarted = true
-
-                // เมื่อเพลงเริ่มเล่นแล้ว ลบ event listener ทั้งหมดออก
-                document.removeEventListener('click', onFirstInteraction)
-                document.removeEventListener('touchend', onFirstInteraction)
-                document.removeEventListener('keydown', onFirstInteraction)
-              })
-              .catch((err) => {
-                // หากไม่สามารถเล่นเพลงได้ ปล่อยให้ event listener ยังทำงานต่อไป
-              })
-          } catch (e) {
-            // กรณีเกิด error ก็ปล่อยให้ event listener ยังทำงานต่อไป
-          }
-        }
-
-        // ฟังเฉพาะ event ที่เบราว์เซอร์นับเป็นการโต้ตอบของผู้ใช้ (อนุญาตให้เล่นเสียงได้)
-        // scroll และ touchstart ไม่นับ จึงไม่ใช้ เพื่อไม่ให้โหลดไฟล์ทั้งที่ยังเล่นไม่ได้
-        const onFirstInteraction = function (e) {
-          // การแตะปุ่มเปิด/ปิดเสียงให้ toggleBGM จัดการเอง
-          // ไม่อย่างนั้น touchend จะเริ่มเพลงก่อน แล้ว click บนปุ่มจะสลับเป็นปิดเสียงทันที
-          if (e.target instanceof Element && e.target.closest('#audio-toggle')) {
-            return
-          }
-          playBGM()
-        }
-
-        document.addEventListener('click', onFirstInteraction)
-        document.addEventListener('touchend', onFirstInteraction)
-        document.addEventListener('keydown', onFirstInteraction)
-
-        // เปิดให้ component อื่นๆ เข้าถึงตัวเล่นเพลงได้
-        window.getBGM = function () {
-          return bgmGlobal
-        }
-
-        // ฟังก์ชันสำหรับเปิด/ปิดเพลง
-        window.toggleBGM = function (mute) {
-          // ถ้าเพลงยังไม่เคยเริ่ม การกดปุ่มครั้งแรกหมายถึง "เปิดเพลง" ไม่ใช่สลับเป็นปิดเสียง
-          if (typeof mute !== 'boolean' && !window.bgmStarted && bgmGlobal.paused) {
-            bgmGlobal.muted = false
-            playBGM()
-            return true
-          }
-
-          if (typeof mute === 'boolean') {
-            bgmGlobal.muted = mute
-          } else {
-            bgmGlobal.muted = !bgmGlobal.muted
-          }
-
-          // ถ้ายังไม่เริ่มเล่น และต้องการเปิดเพลง ให้ลองเล่น
-          if (!window.bgmStarted && !bgmGlobal.muted) {
-            playBGM()
-          }
-
-          return !bgmGlobal.muted // return ค่าปัจจุบัน (true = เปิดเสียง, false = ปิดเสียง)
-        }
-      })
-    </script>
   </head>
   <body>
     <div class='noise-overlay'></div>
     <slot />
+
+    <script>
+      import '../scripts/reveal'
+    </script>
   </body>
 </html>

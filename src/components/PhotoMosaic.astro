@@ -1,37 +1,8 @@
 ---
-import fs from 'node:fs'
-import path from 'node:path'
+import { listPublicImages } from '../utils/images'
 
-// Types
-interface MosaicImage {
-  filename: string
-  path: string
-}
-
-// Utils
-const getMosaicImages = (): MosaicImage[] => {
-  const sweetDir = path.join(process.cwd(), 'public/img/sweet')
-
-  if (!fs.existsSync(sweetDir)) {
-    return []
-  }
-
-  // Numbered .webp files, sorted numerically (1, 2, ... 10) so the grid layout classes match
-  return fs
-    .readdirSync(sweetDir)
-    .filter((filename) => filename.endsWith('.webp') && /\d+/.test(filename))
-    .sort((a, b) => {
-      const numA = Number.parseInt(a.match(/\d+/)?.[0] || '0', 10)
-      const numB = Number.parseInt(b.match(/\d+/)?.[0] || '0', 10)
-      return numA - numB
-    })
-    .map((filename) => ({
-      filename: filename.replace(/\.\w+$/, ''),
-      path: `/img/sweet/${filename}`,
-    }))
-}
-
-const mosaicImages = getMosaicImages()
+// public/img/sweet/1.webp, 2.webp, … in numeric order
+const mosaicImages = listPublicImages('img/sweet')
 ---
 
 <!-- Photo Mosaic -->
@@ -40,21 +11,20 @@ const mosaicImages = getMosaicImages()
   <h2 class='section-title reveal-title'>Sweet Moments</h2>
   <div class='photo-mosaic'>
     {
-      mosaicImages.map((image, index) => (
+      mosaicImages.map((src, index) => (
         <div
-          class={`mosaic-item item${image.filename}`}
-          data-image-path={image.path}
+          class='mosaic-item'
+          data-image-path={src}
           role='button'
           tabindex='0'
           aria-label={`Open photo ${index + 1} of ${mosaicImages.length}`}
         >
           <img
             class='mosaic-image'
-            src={image.path}
+            src={src}
             alt=''
             loading='lazy'
             decoding='async'
-            style='background-color: #eee;'
           />
         </div>
       ))
@@ -62,7 +32,53 @@ const mosaicImages = getMosaicImages()
   </div>
 </section>
 
-<!-- All styles have been moved to global.css -->
+<template id='image-modal-template'>
+  <div
+    class='image-modal'
+    role='dialog'
+    aria-modal='true'
+    aria-labelledby='modal-title'
+  >
+    <div class='image-modal-backdrop'></div>
+    <div class='image-modal-content'>
+      <div class='image-modal-header'>
+        <h3
+          id='modal-title'
+          class='image-modal-title'
+        >
+          Photo View
+        </h3>
+        <button
+          class='image-modal-close'
+          aria-label='Close modal'
+          title='Close (Esc)'
+        >
+          <span aria-hidden='true'>&times;</span>
+        </button>
+      </div>
+      <div class='image-modal-loading'>Loading...</div>
+      <button
+        class='image-modal-nav image-modal-prev'
+        aria-label='Previous image'>&lt;</button
+      >
+      <button
+        class='image-modal-nav image-modal-next'
+        aria-label='Next image'>&gt;</button
+      >
+      <img
+        class='image-modal-image'
+        src=''
+        alt=''
+      />
+      <div class='image-modal-footer'>
+        <button
+          class='image-modal-btn image-modal-close-btn'
+          aria-label='Close'>Close</button
+        >
+      </div>
+    </div>
+  </div>
+</template>
 
 <script>
   // Constants
@@ -122,41 +138,22 @@ const mosaicImages = getMosaicImages()
     })
   }
 
-  const createModal = (): HTMLElement => {
-    const existing = document.querySelector<HTMLElement>('.image-modal')
-    if (existing) return existing
+  // The modal lives in a <template> and is moved to <body>: the mosaic section
+  // uses CSS containment, which would trap a position: fixed overlay inside it
+  const createModal = (): HTMLElement | null => {
+    const template = document.querySelector<HTMLTemplateElement>(
+      '#image-modal-template'
+    )
+    if (!template) return null
 
-    const modalHTML = `
-      <div class="image-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="image-modal-backdrop"></div>
-        <div class="image-modal-content">
-          <div class="image-modal-header">
-            <h3 id="modal-title" class="image-modal-title">Photo View</h3>
-            <button
-              class="image-modal-close"
-              aria-label="Close modal"
-              title="Close (Esc)"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="image-modal-loading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;">Loading...</div>
-          <button class="image-modal-nav image-modal-prev" aria-label="Previous image">&lt;</button>
-          <button class="image-modal-nav image-modal-next" aria-label="Next image">&gt;</button>
-          <img class="image-modal-image" src="" alt="" style="opacity:0;transition:opacity 0.3s ease;">
-          <div class="image-modal-footer">
-            <button class="image-modal-btn image-modal-close-btn" aria-label="Close">Close</button>
-          </div>
-        </div>
-      </div>
-    `
-    document.body.insertAdjacentHTML('beforeend', modalHTML)
-    return document.querySelector<HTMLElement>('.image-modal')!
+    document.body.append(template.content.cloneNode(true))
+    return document.querySelector<HTMLElement>('.image-modal')
   }
 
   // Image modal setup function
   const setupImageModal = (): void => {
     const modal = createModal()
+    if (!modal) return
 
     const modalImage =
       modal.querySelector<HTMLImageElement>('.image-modal-image')
