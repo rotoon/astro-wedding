@@ -11,6 +11,7 @@
     "build:emulator": "PUBLIC_FIREBASE_EMULATOR_HOST=127.0.0.1 PUBLIC_FIREBASE_PROJECT_ID=demo-wedding PUBLIC_FIREBASE_API_KEY=demo-key PUBLIC_FIREBASE_STORAGE_BUCKET=demo-wedding.appspot.com PUBLIC_FIREBASE_AUTH_DOMAIN=demo-wedding.firebaseapp.com PUBLIC_FIREBASE_APP_ID=1:1:web:1 astro build",
     "test:e2e": "node tests/e2e/wishes.e2e.mjs"
   },
+  "packageManager": "pnpm@12.11.2",
   "engines": {
     "node": "^22.12.0 || ^24.0.0"
   },
@@ -23,16 +24,6 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "swiper": "^14.3.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp"
-    ],
-    "ignoredBuiltDependencies": [
-      "@firebase/util",
-      "protobufjs"
-    ]
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

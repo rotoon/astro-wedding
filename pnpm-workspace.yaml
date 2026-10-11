@@ -1,0 +1,7 @@
+# pnpm 11+ reads its settings from here, not from package.json#pnpm
+allowBuilds:
+  # Prebuilt image binaries for Astro's asset pipeline
+  sharp: true
+  # Firebase's postinstall scripts aren't needed for the browser bundle
+  '@firebase/util': false
+  protobufjs: false
