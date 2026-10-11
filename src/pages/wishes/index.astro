@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import Footer from '../../components/Footer.astro'
+import WishesFeed from '../../features/wishes/components/WishesFeed'
+import { couple, dateDisplay } from '../../data/wedding'
+import '../../features/wishes/wishes.css'
+---
+
+<Layout
+  title={`Wishes for ${couple.title} | ${dateDisplay.long}`}
+  description={`Leave a wish for ${couple.bride.nickname} & ${couple.groom.nickname} and read messages from everyone who celebrated with us.`}
+>
+  <main class='wishes-page'>
+    <header class='wishes-hero'>
+      <a
+        class='wishes-home-link'
+        href='/'>← {couple.title}</a
+      >
+      <p class='wishes-kicker'>#STStartTogether · {dateDisplay.dotted}</p>
+      <h1 class='wishes-title'>Wishes &amp; Love</h1>
+      <p class='wishes-subtitle'>ขอบคุณทุกคำอวยพรที่ส่งมาให้เรา</p>
+      <a
+        class='wish-btn primary'
+        href='/wishes/new/'>เขียนคำอวยพร ♥</a
+      >
+    </header>
+
+    <section
+      class='wishes-feed'
+      aria-label='คำอวยพร'
+    >
+      <WishesFeed client:only='react' />
+    </section>
+  </main>
+  <Footer />
+</Layout>

@@ -96,3 +96,23 @@ export const dateDisplay = {
   /** "25 · 05 · 2025" */
   dotted: `${dateParts.day} · ${dateParts.month} · ${dateParts.year}`,
 } as const
+
+// ---------- After the wedding ----------
+
+export const afterWedding = {
+  heroHeading: 'Just Married',
+  thankYou: {
+    title: 'Thank You',
+    /** Draft — edit freely. Each string is a paragraph. */
+    message: [
+      'ขอบคุณทุกคนที่มาร่วมเป็นส่วนหนึ่งในวันสำคัญของเรา ทั้งคำอวยพร รอยยิ้ม และกำลังใจที่ส่งมาให้ เราจะเก็บทุกช่วงเวลานี้ไว้ในความทรงจำตลอดไป',
+      'Thank you for celebrating with us. Your wishes, laughter and love made our day more beautiful than we ever imagined.',
+    ],
+    signature: `— ${couple.bride.nickname} & ${couple.groom.nickname}`,
+  },
+  /**
+   * YouTube id of the highlight film (the part after `v=` or `youtu.be/`).
+   * Leave empty to hide the video section.
+   */
+  highlightVideoId: '',
+} as const

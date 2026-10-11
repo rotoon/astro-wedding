@@ -1,0 +1,488 @@
+/* Guestbook (/wishes, /wishes/new). Built on the variables in global.css so it
+   matches the invitation; loaded only by the guestbook pages. */
+
+.wishes-page {
+  min-height: 100vh;
+  padding: 3rem var(--container-padding) var(--section-spacing);
+  background-color: var(--light-color);
+}
+
+/* ---------- Header ---------- */
+.wishes-hero {
+  max-width: 640px;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.wishes-home-link {
+  display: inline-block;
+  margin-bottom: 2rem;
+  font-family: var(--secondary-font);
+  letter-spacing: 0.15em;
+  color: var(--primary-color);
+}
+
+.wishes-home-link:hover {
+  color: var(--accent-color);
+}
+
+.wishes-kicker {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.wishes-title {
+  margin: 0.75rem 0;
+  font-family: var(--heading-font);
+  font-size: clamp(2.2rem, 7vw, 3.2rem);
+  font-weight: 400;
+  color: var(--primary-color);
+}
+
+.wishes-title.small {
+  font-size: 2rem;
+  text-align: center;
+}
+
+.wishes-subtitle {
+  margin-bottom: 1.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ---------- Buttons ---------- */
+.wish-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.65rem 1.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--primary-color);
+  font-family: var(--body-font);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast) ease,
+    color var(--transition-fast) ease,
+    transform var(--transition-fast) ease;
+}
+
+.wish-btn.primary {
+  background-color: var(--primary-color);
+  color: var(--light-color);
+}
+
+.wish-btn.primary:hover:not(:disabled) {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.wish-btn.secondary {
+  background: transparent;
+  color: var(--primary-color);
+}
+
+.wish-btn.secondary:hover {
+  background-color: rgba(123, 92, 67, 0.08);
+}
+
+.wish-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ---------- Feed ---------- */
+.wishes-feed {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.wishes-count {
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.wishes-list {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.wishes-status {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.wishes-status.small {
+  padding: 1.5rem 1rem 0;
+  font-size: 0.85rem;
+}
+
+.wishes-status.sent {
+  font-family: var(--heading-font);
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.wishes-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.5em;
+  vertical-align: -0.15em;
+  border: 2px solid var(--secondary-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: wish-spin 0.8s linear infinite;
+}
+
+@keyframes wish-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Card ---------- */
+.wish-card {
+  padding: 1.25rem;
+  background-color: #fff;
+  border: 1px solid rgba(218, 202, 190, 0.6);
+  border-radius: var(--border-radius);
+  box-shadow: 0 6px 20px rgba(48, 31, 18, 0.06);
+}
+
+.wish-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.wish-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid var(--gold-color);
+  background-color: var(--secondary-color);
+  font-family: var(--heading-font);
+  font-size: 1.15rem;
+  color: var(--primary-color);
+}
+
+.wish-author {
+  font-family: var(--body-font);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  overflow-wrap: anywhere;
+}
+
+.wish-date {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.wish-message {
+  line-height: 1.7;
+  color: var(--text-dark);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.wish-photos {
+  position: relative;
+  margin-top: 1rem;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  background-color: var(--light-color);
+  touch-action: manipulation; /* double-tap to like without zooming */
+}
+
+.wish-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+.wish-footer {
+  display: flex;
+  margin-top: 0.9rem;
+}
+
+.wish-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--secondary-color);
+  border-radius: 999px;
+  color: var(--text-muted);
+  transition:
+    border-color var(--transition-fast) ease,
+    color var(--transition-fast) ease;
+}
+
+.wish-like svg {
+  fill: currentColor;
+}
+
+.wish-like:hover,
+.wish-like.liked {
+  border-color: var(--gold-color);
+  color: var(--brick-color);
+}
+
+.wish-like.liked svg {
+  fill: var(--gold-color);
+  animation: wish-like-pop 0.4s ease;
+}
+
+@keyframes wish-like-pop {
+  50% {
+    transform: scale(1.4);
+  }
+}
+
+/* ---------- Carousel ---------- */
+.wish-carousel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.wish-carousel-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.45s ease-out;
+}
+
+.wish-carousel-track .wish-photo {
+  flex: 0 0 100%;
+}
+
+.wish-carousel-btn {
+  position: absolute;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin-top: -17px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text-dark);
+}
+
+.wish-carousel-btn.prev {
+  left: 8px;
+}
+
+.wish-carousel-btn.next {
+  right: 8px;
+}
+
+.wish-carousel-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.wish-carousel-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.55);
+  transition: background-color 0.2s ease;
+}
+
+.wish-carousel-dots span.active {
+  background-color: #fff;
+}
+
+/* ---------- Heart pop (like) ---------- */
+.wish-heart-pop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 10000;
+  pointer-events: none;
+  animation: wish-heart-pop 0.9s ease forwards;
+}
+
+.wish-heart-pop svg {
+  fill: var(--gold-color);
+  filter: drop-shadow(0 6px 16px rgba(48, 31, 18, 0.25));
+}
+
+@keyframes wish-heart-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* ---------- Form ---------- */
+.wish-form-card {
+  max-width: 560px;
+  margin: 1rem auto 0;
+  padding: 2rem 1.5rem;
+  background-color: #fff;
+  border: 1px solid rgba(218, 202, 190, 0.6);
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 30px rgba(48, 31, 18, 0.08);
+}
+
+.wish-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.wish-field {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.wish-field input[type='text'],
+.wish-field textarea {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--secondary-color);
+  border-radius: var(--border-radius);
+  background-color: #fffdfb;
+  font: inherit;
+  font-size: 16px; /* 16px stops iOS from zooming into the field */
+  color: var(--text-dark);
+  resize: vertical;
+}
+
+.wish-field input[type='text']:focus,
+.wish-field textarea:focus {
+  outline: 2px solid var(--gold-color);
+  outline-offset: 1px;
+  border-color: var(--gold-color);
+}
+
+.wish-counter {
+  justify-self: end;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.wish-photo-picker {
+  display: block;
+  padding: 1rem;
+  border: 1.5px dashed var(--accent-color);
+  border-radius: var(--border-radius);
+  text-align: center;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: background-color var(--transition-fast) ease;
+}
+
+.wish-photo-picker:hover,
+input:focus-visible + .wish-photo-picker {
+  background-color: rgba(217, 186, 127, 0.12);
+}
+
+.wish-photo-picker.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wish-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 0.6rem;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wish-previews li {
+  position: relative;
+  aspect-ratio: 1;
+}
+
+.wish-previews img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.wish-previews button {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.wish-error {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--border-radius);
+  background-color: rgba(164, 86, 61, 0.1);
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--brick-color);
+}
+
+.wish-actions {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.wish-actions .wish-btn {
+  flex: 1 1 160px;
+}

@@ -15,11 +15,11 @@ interface Props {
 }
 
 const {
-  title = `${couple.title} Wedding Invitation | ${dateDisplay.long}`,
-  description = `Join us for the wedding celebration of ${couple.bride.name} (${couple.bride.nickname}) & ${couple.groom.name} (${couple.groom.nickname}) on ${dateDisplay.long}, at ${venue.shortName}.`,
+  title = `${couple.title} | Just Married · ${dateDisplay.long}`,
+  description = `${couple.bride.name} (${couple.bride.nickname}) & ${couple.groom.name} (${couple.groom.nickname}) were married on ${dateDisplay.long} at ${venue.shortName}. Relive the day, watch the film and leave us a wish.`,
 } = Astro.props
 
-const canonicalURL = site.url
+const canonicalURL = new URL(Astro.url.pathname, site.url).href
 const ogImageUrl = new URL(site.ogImage, site.url).href
 const ogImageAlt = `${couple.title} ${couple.tagline} ${dateDisplay.dashed}`
 const buildTime = new Date().toISOString()
@@ -103,7 +103,7 @@ const eventSchema = {
 }
 
 const fontsUrl =
-  'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600&family=Cinzel:wght@400;500&family=Montserrat:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap'
+  'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600&family=Cinzel:wght@400;500&family=Montserrat:wght@300;400;500&family=Playfair+Display:wght@400;500&family=Prompt:wght@300;400;500&display=swap'
 ---
 
 <!doctype html>

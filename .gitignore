@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Firebase emulator logs
+firebase-debug.log
+firestore-debug.log
+storage-debug.log
+ui-debug.log
