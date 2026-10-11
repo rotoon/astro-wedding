@@ -119,6 +119,10 @@ const fontsUrl =
       type='image/x-icon'
       href='/favicon.ico'
     />
+    <link
+      rel='apple-touch-icon'
+      href='/icons/apple-touch-icon.png'
+    />
     <title>{title}</title>
     {metaTags.map((tag) => <meta {...tag} />)}
     <link
@@ -204,7 +208,7 @@ const fontsUrl =
       href={fontsUrl}
       rel='stylesheet'
       media='print'
-      onload="this.media='all'"
+      onload="this.setAttribute('media', 'all')"
     />
     <!-- Font fallback in case the above doesn't load -->
     <noscript>

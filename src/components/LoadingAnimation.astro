@@ -35,8 +35,20 @@ import { couple } from '../data/wedding'
 
   // Show the intro for at least MIN_LOADING_TIME, wait for the hero image,
   // but never keep guests waiting longer than MAX_LOADING_TIME
-  const MIN_LOADING_TIME = 1500
+  const SEEN_KEY = 'introSeen'
   const MAX_LOADING_TIME = 3000
+
+  // Guests coming back in the same session have seen the intro: don't hold them
+  const seenBefore = (() => {
+    try {
+      const seen = sessionStorage.getItem(SEEN_KEY) === '1'
+      sessionStorage.setItem(SEEN_KEY, '1')
+      return seen
+    } catch {
+      return false // storage blocked: show the full intro
+    }
+  })()
+  const MIN_LOADING_TIME = seenBefore ? 0 : 1500
   const PROGRESS_INTERVAL = 100 // Update the percentage every 100ms
   const PROGRESS_INCREMENT = 100 / (MIN_LOADING_TIME / PROGRESS_INTERVAL)
   const FADE_DELAY = 300 // Let the loading screen start fading before showing content
