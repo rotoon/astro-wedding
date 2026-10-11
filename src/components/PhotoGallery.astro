@@ -21,10 +21,9 @@ const galleryImages = (shuffled ? shuffle(images) : images).slice(0, limit)
 {
   galleryImages.length > 0 && (
     <section class='gallery-section'>
-      <div class='gallery-title-container'>
-        <div class='gallery-ornament left'></div>
+      <div class='gallery-heading'>
+        <div class='section-decorative-line'></div>
         <h2 class='section-title gallery-title reveal-title'>{title}</h2>
-        <div class='gallery-ornament right'></div>
       </div>
 
       <div class='swiper-container'>
