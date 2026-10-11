@@ -1,8 +1,8 @@
 ---
-import { directionsUrl, venue } from '../data/wedding'
+import { venue } from '../data/wedding'
 ---
 
-<!-- Map Section -->
+<!-- Where the wedding took place (a keepsake now, so no directions button) -->
 <section class='map-section'>
   <div class='map-container'>
     <h2 class='map-title reveal-title'>Where We Said “I Do”</h2>
@@ -12,12 +12,6 @@ import { directionsUrl, venue } from '../data/wedding'
         <div class='map-info'>
           <h3>{venue.name}</h3>
           <p>{venue.fullAddress}</p>
-          <a
-            class='map-nav-btn'
-            href={directionsUrl}
-            target='_blank'
-            rel='noopener noreferrer'>Get Directions</a
-          >
         </div>
       </div>
     </div>

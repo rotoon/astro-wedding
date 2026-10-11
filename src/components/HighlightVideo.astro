@@ -20,7 +20,8 @@ const title = `${couple.bride.nickname} & ${couple.groom.nickname} — Wedding H
           aria-label={`Play video: ${title}`}
         >
           <img
-            src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+            src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`}
+            onerror={`this.onerror=null;this.src='https://i.ytimg.com/vi/${videoId}/hqdefault.jpg'`}
             alt=''
             loading='lazy'
             decoding='async'

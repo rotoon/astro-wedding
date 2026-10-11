@@ -1,6 +1,7 @@
 ---
-// Latest guestbook wishes on the homepage. Read through the Firestore REST API
-// by a small script (no Firebase SDK here); the full guestbook lives at /wishes.
+// "From Our Guests" on the homepage: every photo guests attached to their wishes,
+// then the most-loved wishes. Read through the Firestore REST API by a small
+// script (no Firebase SDK here); the full guestbook lives at /wishes.
 ---
 
 <section
@@ -8,14 +9,34 @@
   id='wishes'
 >
   <div class='section-decorative-line'></div>
-  <h2 class='section-title reveal-title'>Wishes From You</h2>
-  <p class='wishes-wall-intro reveal-item'>คำอวยพรจากทุกคนที่ส่งมาให้เรา</p>
+  <h2 class='section-title reveal-title'>From Our Guests</h2>
+  <p class='wishes-wall-intro reveal-item'>รูปและคำอวยพรจากทุกคนที่มาร่วมงานกับเรา</p>
 
   <div
-    class='wishes-wall-grid'
-    data-wishes-wall
-    aria-live='polite'
+    class='wall-group'
+    data-guest-photos-group
+    hidden
   >
+    <h3 class='wall-subtitle'>Through Your Eyes</h3>
+    <div
+      class='guest-photos'
+      data-guest-photos
+    >
+    </div>
+  </div>
+
+  <div
+    class='wall-group'
+    data-wishes-wall-group
+    hidden
+  >
+    <h3 class='wall-subtitle'>Most Loved Wishes</h3>
+    <div
+      class='wishes-wall-grid'
+      data-wishes-wall
+      aria-live='polite'
+    >
+    </div>
   </div>
 
   <div class='wishes-wall-actions reveal-item'>
@@ -31,21 +52,33 @@
 </section>
 
 <script>
-  import { emulatorHost, firebaseConfig, isConfigured, WISHES_COLLECTION } from '../features/wishes/config'
-  import { relativeTime } from '../features/wishes/time'
+  import {
+    emulatorHost,
+    firebaseConfig,
+    isConfigured,
+    isStoragePhotoURL,
+    WISHES_COLLECTION,
+  } from '../features/wishes/config'
 
   const WALL_SIZE = 6
+  // The photo strip scrolls by itself once it has this many photos
+  const MARQUEE_MIN = 6
+  const SECONDS_PER_PHOTO = 4
+  // The guestbook is small; one read covers both the photo strip and the ranking
+  const FETCH_SIZE = 100
 
   interface WallWish {
     name: string
     message: string
-    photo?: string
+    photos: string[]
+    reactions: number
     createdAt: Date
   }
 
   // Firestore REST returns typed values: { stringValue }, { timestampValue }, …
   type FirestoreValue = {
     stringValue?: string
+    integerValue?: string
     timestampValue?: string
     arrayValue?: { values?: FirestoreValue[] }
   }
@@ -57,7 +90,7 @@
       : 'https://firestore.googleapis.com/v1'
     // Built by hand: URLSearchParams turns the space into "+", which Firestore
     // reads literally ("Invalid order by clause")
-    const params: Record<string, string> = { orderBy: 'createdAt desc', pageSize: String(WALL_SIZE) }
+    const params: Record<string, string> = { orderBy: 'createdAt desc', pageSize: String(FETCH_SIZE) }
     if (!emulatorHost && firebaseConfig.apiKey) params.key = firebaseConfig.apiKey
     const query = Object.entries(params)
       .map(([name, value]) => `${name}=${encodeURIComponent(value)}`)
@@ -65,22 +98,50 @@
     return `${base}/projects/${firebaseConfig.projectId}/databases/(default)/documents/${WISHES_COLLECTION}?${query}`
   }
 
-  const toWish = ({ fields = {} }: FirestoreDocument): WallWish => ({
-    name: fields.name?.stringValue ?? '',
-    message: fields.message?.stringValue ?? '',
-    photo: fields.photoURLs?.arrayValue?.values?.[0]?.stringValue,
-    createdAt: new Date(fields.createdAt?.timestampValue ?? Date.now()),
-  })
+  const toWish = ({ fields = {} }: FirestoreDocument): WallWish => {
+    const listed = (fields.photoURLs?.arrayValue?.values ?? []).map((value) => value.stringValue ?? '')
+    // Older wishes stored a single `photoURL`
+    const legacy = fields.photoURL?.stringValue
+    return {
+      name: fields.name?.stringValue ?? '',
+      message: fields.message?.stringValue ?? '',
+      photos: (listed.length > 0 ? listed : legacy ? [legacy] : []).filter(isStoragePhotoURL),
+      reactions: Number(fields.reactions?.integerValue ?? 0),
+      createdAt: new Date(fields.createdAt?.timestampValue ?? Date.now()),
+    }
+  }
+
+  const photoTile = (src: string, name: string) => {
+    const link = document.createElement('a')
+    link.className = 'guest-photo'
+    link.href = src
+    link.target = '_blank'
+    link.rel = 'noopener noreferrer'
+    link.setAttribute('aria-label', `รูปจาก ${name} (เปิดรูปเต็ม)`)
+
+    const img = document.createElement('img')
+    img.src = src
+    img.alt = ''
+    img.loading = 'lazy'
+    img.decoding = 'async'
+
+    const caption = document.createElement('span')
+    caption.className = 'guest-photo-name'
+    caption.textContent = name
+
+    link.append(img, caption)
+    return link
+  }
 
   // Built with textContent only: guest-written text never becomes HTML
   const card = (wish: WallWish) => {
     const article = document.createElement('article')
     article.className = 'wall-card'
 
-    if (wish.photo) {
+    if (wish.photos[0]) {
       const img = document.createElement('img')
       img.className = 'wall-photo'
-      img.src = wish.photo
+      img.src = wish.photos[0]
       img.alt = ''
       img.loading = 'lazy'
       img.decoding = 'async'
@@ -96,22 +157,63 @@
     const name = document.createElement('span')
     name.className = 'wall-name'
     name.textContent = wish.name
-    const time = document.createElement('time')
-    time.dateTime = wish.createdAt.toISOString()
-    time.textContent = relativeTime(wish.createdAt)
-    footer.append(name, time)
+    const likes = document.createElement('span')
+    likes.className = 'wall-likes'
+    likes.textContent = `♥ ${wish.reactions}`
+    likes.setAttribute('aria-label', `ถูกใจ ${wish.reactions} ครั้ง`)
+    footer.append(name, likes)
 
     article.append(message, footer)
     return article
   }
 
-  const load = async (grid: HTMLElement) => {
+  const load = async (section: HTMLElement) => {
     try {
       const response = await fetch(endpoint())
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const { documents = [] } = (await response.json()) as { documents?: FirestoreDocument[] }
       const wishes = documents.map(toWish).filter((wish) => wish.name && wish.message)
-      grid.replaceChildren(...wishes.map(card))
+
+      // Wishes with a photo, most liked first; ties go to the newer wish (the sort is stable)
+      const loved = wishes
+        .filter((wish) => wish.photos.length > 0)
+        .sort((a, b) => b.reactions - a.reactions)
+        .slice(0, WALL_SIZE)
+      const grid = section.querySelector<HTMLElement>('[data-wishes-wall]')
+      if (grid && loved.length > 0) {
+        grid.replaceChildren(...loved.map(card))
+        section.querySelector<HTMLElement>('[data-wishes-wall-group]')!.hidden = false
+      }
+
+      // Every other guest photo, newest first; a loved wish's cover photo is
+      // already on its card, so it isn't repeated here
+      const onCards = new Set(loved.map((wish) => wish.photos[0]))
+      const photos = wishes.flatMap((wish) =>
+        wish.photos.filter((src) => !onCards.has(src)).map((src) => photoTile(src, wish.name))
+      )
+      const strip = section.querySelector<HTMLElement>('[data-guest-photos]')
+      if (strip && photos.length > 0) {
+        const track = document.createElement('div')
+        track.className = 'guest-photos-track'
+        track.append(...photos)
+
+        // Enough photos to fill the row: let it run as a conveyor belt. A second,
+        // hidden copy follows the first so the loop has no gap.
+        if (photos.length >= MARQUEE_MIN) {
+          const copies = photos.map((tile) => {
+            const copy = tile.cloneNode(true) as HTMLElement
+            copy.setAttribute('aria-hidden', 'true')
+            copy.tabIndex = -1
+            return copy
+          })
+          track.append(...copies)
+          track.style.setProperty('--marquee-duration', `${photos.length * SECONDS_PER_PHOTO}s`)
+          strip.classList.add('is-moving')
+        }
+
+        strip.replaceChildren(track)
+        section.querySelector<HTMLElement>('[data-guest-photos-group]')!.hidden = false
+      }
     } catch (error) {
       // The buttons below still lead to the guestbook
       console.error('Could not load wishes:', error)
@@ -119,16 +221,15 @@
   }
 
   const section = document.getElementById('wishes')
-  const grid = section?.querySelector<HTMLElement>('[data-wishes-wall]')
 
-  if (section && grid && isConfigured) {
+  if (section && isConfigured) {
     // Fetch only when the section is about to scroll into view. Observe the
-    // section: the empty grid is display:none and would never intersect.
+    // section: the groups are hidden until filled and would never intersect.
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return
         observer.disconnect()
-        load(grid)
+        load(section)
       },
       { rootMargin: '600px 0px' }
     )

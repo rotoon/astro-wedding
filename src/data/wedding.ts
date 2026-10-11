@@ -61,7 +61,6 @@ export const venue = {
   longitude: 98.8788303,
 } as const
 
-export const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}&travelmode=driving`
 
 // ---------- Date display helpers (always rendered in Thai time) ----------
 
@@ -114,5 +113,5 @@ export const afterWedding = {
    * YouTube id of the highlight film (the part after `v=` or `youtu.be/`).
    * Leave empty to hide the video section.
    */
-  highlightVideoId: '',
+  highlightVideoId: 'xKU4cAmpGvI',
 } as const

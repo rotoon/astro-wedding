@@ -27,7 +27,6 @@ Requires Node.js 22.12+ or 24 (`package.json` `engines`; Vercel builds with 24.x
 
 ```text
 public/
-├── bgm/bgm.MP3          Background music (loaded on the guest's first tap)
 ├── img/
 │   ├── hero.webp        Hero background
 │   ├── slide/           "Our Love Story" slider — every image here is shown, in random order per build

@@ -15,7 +15,13 @@ import {
   type QueryDocumentSnapshot,
 } from 'firebase/firestore'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
-import { MAX_PHOTOS, PAGE_SIZE, STORAGE_FOLDER, WISHES_COLLECTION } from './config'
+import {
+  isStoragePhotoURL,
+  MAX_PHOTOS,
+  PAGE_SIZE,
+  STORAGE_FOLDER,
+  WISHES_COLLECTION,
+} from './config'
 import { db, storage } from './firebase'
 import { resizePhoto, validatePhoto } from './image'
 
@@ -51,11 +57,12 @@ const toWish = (snapshot: WishCursor): Wish => {
     name: data.name ?? '',
     message: data.message ?? '',
     // Older wishes may have no photos (null) or a single legacy `photoURL`
-    photoURLs: Array.isArray(data.photoURLs)
+    photoURLs: (Array.isArray(data.photoURLs)
       ? data.photoURLs
       : data.photoURL
         ? [data.photoURL]
-        : [],
+        : []
+    ).filter((url: unknown) => typeof url === 'string' && isStoragePhotoURL(url)),
     // null for a moment while serverTimestamp() is pending on a fresh local write
     createdAt: data.createdAt?.toDate?.() ?? new Date(),
     reactions: data.reactions ?? 0,
