@@ -917,6 +917,15 @@ button:focus-visible,
   background: linear-gradient(to top, rgba(48, 31, 18, 0.8), transparent);
 }
 
+/* Swiper's stylesheet loads after this one, so theme it through its variables
+   (its defaults are blue #007aff and black inactive dots) */
+.gallery-section {
+  --swiper-theme-color: var(--gold-color);
+  --swiper-navigation-color: var(--dark-color);
+  --swiper-pagination-bullet-inactive-color: var(--light-color);
+  --swiper-pagination-bullet-inactive-opacity: 0.5;
+}
+
 .gallery-controls {
   display: flex;
   justify-content: center;
@@ -924,8 +933,10 @@ button:focus-visible,
   margin-top: 1rem;
 }
 
-.swiper-button-prev,
-.swiper-button-next {
+/* .gallery-section prefix: outranks Swiper's own absolute positioning, so the
+   arrows sit in the row below the slides */
+.gallery-section .swiper-button-prev,
+.gallery-section .swiper-button-next {
   position: relative;
   width: 40px;
   height: 40px;
@@ -943,9 +954,10 @@ button:focus-visible,
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.swiper-button-prev svg,
-.swiper-button-next svg {
-  height: 50%;
+/* Swiper stretches the arrow icon to fill the whole button */
+.gallery-section .swiper-navigation-icon {
+  width: 40%;
+  height: 40%;
 }
 
 .swiper-button-prev:hover,
