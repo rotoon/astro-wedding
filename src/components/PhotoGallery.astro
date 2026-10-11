@@ -8,11 +8,13 @@ interface Props {
   title: string
   /** New random order on each build (default) or file-name order */
   shuffled?: boolean
+  /** Show at most this many slides (after shuffling: a different set each build) */
+  limit?: number
 }
 
-const { folder, title, shuffled = true } = Astro.props
+const { folder, title, shuffled = true, limit } = Astro.props
 const images = listPublicImages(folder)
-const galleryImages = shuffled ? shuffle(images) : images
+const galleryImages = (shuffled ? shuffle(images) : images).slice(0, limit)
 ---
 
 <!-- Photo Gallery (rendered only when the folder has images) -->

@@ -1058,7 +1058,8 @@ button:focus-visible,
 .photo-mosaic {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(8, minmax(100px, 20vw));
+  /* Rows follow the number of photos shown (some stay hidden until "see more") */
+  grid-auto-rows: minmax(100px, 20vw);
   grid-gap: 15px;
   max-width: 1200px;
   margin: 2rem auto 0;
@@ -1122,7 +1123,7 @@ button:focus-visible,
 @media (max-width: 767px) {
   .photo-mosaic {
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(12, 50vw);
+    grid-auto-rows: 50vw;
     grid-gap: 10px;
     contain: layout style paint;
   }
@@ -1132,6 +1133,22 @@ button:focus-visible,
     grid-row: auto !important;
     contain: layout style paint;
   }
+
+  /* Odd count in two columns: the last shown photo takes the full row */
+  .mosaic-item.mosaic-wide {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+.mosaic-item[hidden] {
+  display: none;
+}
+
+.mosaic-more {
+  margin-top: 2rem;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 /* --- Countdown Section --- */
@@ -1337,7 +1354,7 @@ button:focus-visible,
 }
 
 .map-placeholder {
-  height: 300px;
+  height: 220px;
   background-color: #f0f0f0;
   background-image: url('/img/elegent.webp');
   background-size: cover;
@@ -1355,17 +1372,6 @@ button:focus-visible,
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%237B5C43"><path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"/></svg>');
   background-repeat: no-repeat;
   background-position: center;
-  animation: pinBounce 2s infinite;
-}
-
-@keyframes pinBounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 
 .map-info {
@@ -1389,7 +1395,6 @@ button:focus-visible,
 
 .map-info p {
   font-size: 0.9rem;
-  margin-bottom: 1rem;
   color: var(--text-muted);
 }
 
@@ -1936,6 +1941,108 @@ button:focus-visible,
   color: var(--text-muted);
 }
 
+.wall-group {
+  max-width: 1000px;
+  margin: 0 auto 2.5rem;
+}
+
+.wall-subtitle {
+  margin-bottom: 1.25rem;
+  font-family: var(--secondary-font);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+}
+
+/* Guest photos: one row that runs by itself (.is-moving) and pauses under the
+   pointer; a plain swipeable row when it's short or motion is reduced */
+.guest-photos {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary-color) transparent;
+}
+
+.guest-photos-track {
+  display: flex;
+  width: max-content;
+}
+
+.guest-photos.is-moving {
+  overflow: hidden;
+  /* Fade the edges so photos glide in and out */
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+
+.guest-photos.is-moving .guest-photos-track {
+  animation: guest-marquee var(--marquee-duration, 60s) linear infinite;
+}
+
+.guest-photos.is-moving:hover .guest-photos-track,
+.guest-photos.is-moving:focus-within .guest-photos-track {
+  animation-play-state: paused;
+}
+
+/* The track holds the photos twice: moving it by half loops seamlessly */
+@keyframes guest-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guest-photos.is-moving {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .guest-photos.is-moving .guest-photos-track {
+    animation: none;
+  }
+
+  .guest-photo[aria-hidden='true'] {
+    display: none;
+  }
+}
+
+.guest-photo {
+  position: relative;
+  flex: 0 0 clamp(150px, 42vw, 220px);
+  aspect-ratio: 4 / 5;
+  /* margin, not gap: keeps both copies exactly half the track */
+  margin-right: 0.75rem;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  background-color: var(--secondary-color); /* placeholder while loading */
+}
+
+.guest-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.guest-photo:hover img {
+  transform: scale(1.04);
+}
+
+.guest-photo-name {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 1.5rem 0.6rem 0.5rem;
+  font-size: 0.75rem;
+  text-align: left;
+  color: #fff;
+  background: linear-gradient(to top, rgba(48, 31, 18, 0.75), transparent);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .wishes-wall-grid {
   /* Masonry: cards of different heights stack without gaps */
   columns: 3 280px;
@@ -2002,6 +2109,11 @@ button:focus-visible,
   padding: 0.6rem 1.1rem 1rem;
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.wall-likes {
+  flex-shrink: 0;
+  color: var(--brick-color);
 }
 
 .wall-name {

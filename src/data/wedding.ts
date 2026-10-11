@@ -61,7 +61,6 @@ export const venue = {
   longitude: 98.8788303,
 } as const
 
-export const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}&travelmode=driving`
 
 // ---------- Date display helpers (always rendered in Thai time) ----------
 

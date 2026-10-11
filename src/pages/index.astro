@@ -19,13 +19,9 @@ import Footer from '../components/Footer.astro'
   <MusicPlayer />
   <div class='main-container'>
     <HeroSection />
+    <!-- Keepsake order: the day itself first, the story before it after -->
     <div class='invitation-content'>
-      <Bio />
-      <PhotoGallery
-        folder='img/slide'
-        title='Our Love Story'
-      />
-      <PhotoMosaic />
+      <ThankYou />
       <!-- Shown once photos are added to public/img/wedding-day -->
       <PhotoGallery
         folder='img/wedding-day'
@@ -34,9 +30,15 @@ import Footer from '../components/Footer.astro'
       />
       <!-- Shown once afterWedding.highlightVideoId is set in src/data/wedding.ts -->
       <HighlightVideo />
-      <TogetherFor />
-      <ThankYou />
       <WishesWall />
+      <PhotoGallery
+        folder='img/slide'
+        title='Our Love Story'
+        limit={12}
+      />
+      <PhotoMosaic />
+      <TogetherFor />
+      <Bio />
       <Map />
       <Footer />
     </div>

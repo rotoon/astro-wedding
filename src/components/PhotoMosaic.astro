@@ -3,6 +3,11 @@ import { listPublicImages } from '../utils/images'
 
 // public/img/sweet/1.webp, 2.webp, … in numeric order
 const mosaicImages = listPublicImages('img/sweet')
+
+// Show the first few; the rest wait behind "see more" (rename files to reorder)
+const INITIAL_COUNT = 9
+const hiddenCount = Math.max(0, mosaicImages.length - INITIAL_COUNT)
+const lastShown = Math.min(INITIAL_COUNT, mosaicImages.length) - 1
 ---
 
 <!-- Photo Mosaic -->
@@ -13,7 +18,12 @@ const mosaicImages = listPublicImages('img/sweet')
     {
       mosaicImages.map((src, index) => (
         <div
-          class='mosaic-item'
+          class:list={[
+            'mosaic-item',
+            // odd count in two columns on phones
+            { 'mosaic-wide': index === lastShown && (lastShown + 1) % 2 === 1 },
+          ]}
+          hidden={index >= INITIAL_COUNT}
           data-image-path={src}
           role='button'
           tabindex='0'
@@ -30,6 +40,16 @@ const mosaicImages = listPublicImages('img/sweet')
       ))
     }
   </div>
+  {
+    hiddenCount > 0 && (
+      <button
+        type='button'
+        class='map-nav-btn mosaic-more'
+      >
+        ดูรูปเพิ่มอีก {hiddenCount} รูป
+      </button>
+    )
+  }
 </section>
 
 <template id='image-modal-template'>
@@ -319,7 +339,23 @@ const mosaicImages = listPublicImages('img/sweet')
     })
   }
 
+  // "See more": show the hidden photos (already observed above, so they fade in
+  // once displayed). The modal's prev/next already covers every photo.
+  const setupSeeMore = (): void => {
+    const button = document.querySelector<HTMLButtonElement>('.mosaic-more')
+    if (!button) return
+
+    button.addEventListener('click', () => {
+      const extra = document.querySelectorAll<HTMLElement>('.mosaic-item[hidden]')
+      document.querySelector('.mosaic-wide')?.classList.remove('mosaic-wide')
+      extra.forEach((item) => (item.hidden = false))
+      button.remove()
+      extra[0]?.focus({ preventScroll: true })
+    })
+  }
+
   setupAnimations()
   setupHoverEffects()
   setupImageModal()
+  setupSeeMore()
 </script>
