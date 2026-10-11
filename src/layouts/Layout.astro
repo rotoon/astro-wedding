@@ -25,6 +25,37 @@ const coupleNames = 'Suchanya & Nuttapon'
 
 // Determine the OpenGraph image URL - use dynamic endpoint if specified
 const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
+
+// Event structured data - serialized with JSON.stringify so values are escaped
+const eventSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: `Wedding of ${coupleNames}`,
+  startDate: weddingDate,
+  endDate: '2025-05-25T15:00:00+07:00',
+  location: {
+    '@type': 'Place',
+    name: 'Wedding Venues at Virgin Ville Sanpatong Chiangmai',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '194/5 หมู่6 ตำบล ยุหว่า',
+      addressLocality: 'อำเภอสันป่าตอง',
+      addressRegion: 'เชียงใหม่',
+      postalCode: '50120',
+      addressCountry: 'TH',
+    },
+  },
+  image: [
+    ogImageUrl,
+    new URL('/img/hero.webp', canonicalURL).href,
+    new URL('/img/bride.webp', canonicalURL).href,
+  ],
+  description: 'SOM & TOON START TOGETHER 25-05-2025',
+  organizer: {
+    '@type': 'Person',
+    name: coupleNames,
+  },
+}
 ---
 
 <!doctype html>
@@ -191,37 +222,10 @@ const ogImageUrl = 'https://www.ststarttogether.com/img/og-cover.webp'
     />
 
     <!-- Event Structured Data for SEO -->
-    <script type='application/ld+json'>
-      {
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "Wedding of Suchanya & Nuttapon",
-        "startDate": "${weddingDate}",
-        "endDate": "2025-05-25T15:00:00+07:00",
-        "location": {
-          "@type": "Place",
-          "name": "Wedding Venues at Virgin Ville Sanpatong Chiangmai",
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "194/5 หมู่6 ตำบล ยุหว่า",
-            "addressLocality": "อำเภอสันป่าตอง",
-            "addressRegion": "เชียงใหม่",
-            "postalCode": "50120",
-            "addressCountry": "TH"
-          }
-        },
-        "image": [
-          "${ogImageUrl}",
-          "${new URL('/img/hero.webp', Astro.url.origin).href}",
-          "${new URL('/img/bride.webp', Astro.url.origin).href}"
-        ],
-        "description": "SOM & TOON START TOGETHER 25-05-2025",
-        "organizer": {
-          "@type": "Person",
-          "name": "Suchanya & Nuttapon"
-        }
-      }
-    </script>
+    <script
+      type='application/ld+json'
+      set:html={JSON.stringify(eventSchema)}
+    />
 
     <!-- Resource hints for better performance -->
     <link

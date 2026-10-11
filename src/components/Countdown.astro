@@ -59,7 +59,7 @@
     return selector
   }
 
-  const weddingDate = new Date('May 25, 2025 08:39:00').getTime()
+  const weddingDate = new Date('2025-05-25T08:39:00+07:00').getTime()
   const countdownElements = {
     days: getElement('#days'),
     hours: getElement('#hours'),
@@ -93,6 +93,7 @@
     })
   }
 
-  updateCountdown()
+  // Start the timer before the first update so updateCountdown can clear it
   const countdownTimer = setInterval(updateCountdown, 1000)
+  updateCountdown()
 </script>

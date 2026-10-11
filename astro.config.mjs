@@ -4,6 +4,8 @@ import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://www.ststarttogether.com',
+
   // Enable compression for better performance
   compressHTML: true,
 
