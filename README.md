@@ -1,7 +1,7 @@
 # SOM & TOON — Wedding Invitation
 
 Single-page wedding invitation for Suchanya (Som) & Nuttapon (Toon), 25 May 2025,
-Virgin Ville Sanpatong, Chiang Mai. Live at <https://www.ststarttogether.com/>.
+Virgin Ville Sanpatong, Chiang Mai. Live at <https://ststarttogether.vercel.app/>.
 
 Built with [Astro](https://astro.build) as a fully static site. The only runtime
 dependency is [Swiper](https://swiperjs.com) for the photo slider; everything else

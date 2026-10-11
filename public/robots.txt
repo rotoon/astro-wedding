@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://www.ststarttogether.com/sitemap.xml 
+Sitemap: https://ststarttogether.vercel.app/sitemap.xml
