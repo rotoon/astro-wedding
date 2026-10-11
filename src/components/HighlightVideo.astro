@@ -40,9 +40,6 @@ const title = `${couple.bride.nickname} & ${couple.groom.nickname} — Wedding H
   // Lite embed: swap the thumbnail for the real player only when asked
   document.querySelectorAll<HTMLElement>('.video-frame').forEach((frame) => {
     frame.querySelector('.video-play')?.addEventListener('click', () => {
-      // The film has its own sound: pause the background music (MusicPlayer)
-      document.querySelector<HTMLAudioElement>('#bgm-global')?.pause()
-
       const iframe = document.createElement('iframe')
       iframe.src = `https://www.youtube-nocookie.com/embed/${frame.dataset.videoId}?autoplay=1&rel=0&playsinline=1`
       iframe.title = 'Wedding highlight video'

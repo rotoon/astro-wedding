@@ -97,64 +97,6 @@ button:focus-visible,
   outline-offset: 3px;
 }
 
-/* ========= Audio Control ========= */
-.audio-control {
-  position: fixed;
-  bottom: 25px;
-  right: 25px;
-  z-index: 9999;
-}
-
-.audio-btn {
-  width: 50px;
-  height: 50px;
-  animation: pulse 2s infinite;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  color: var(--light-color);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.audio-btn:hover {
-  transform: scale(1.1);
-  background-color: var(--accent-color);
-}
-
-.audio-btn svg {
-  width: 24px;
-  height: 24px;
-}
-
-.audio-off {
-  display: none;
-}
-
-.audio-btn.muted .audio-on {
-  display: none;
-}
-
-.audio-btn.muted .audio-off {
-  display: block;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(123, 92, 67, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(123, 92, 67, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(123, 92, 67, 0);
-  }
-}
-
 /* ========= Noise and Texture Effects ========= */
 .noise-overlay {
   position: fixed;
@@ -1800,7 +1742,7 @@ button:focus-visible,
   }
 }
 
-/* Respect the OS "reduce motion" setting: no reveal, pulse or hover motion */
+/* Respect the OS "reduce motion" setting: no reveal or hover motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
