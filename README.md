@@ -10,7 +10,9 @@ homepage (plain JS/CSS + [Swiper](https://swiperjs.com)) and a guestbook at `/wi
 
 ## Commands
 
-Requires Node.js 22.12 or newer (even-numbered releases), as declared in `package.json` `engines`.
+Requires Node.js 22.12+ or 24 (`package.json` `engines`; Vercel builds with 24.x).
+`vercel.json` makes Vercel install from scratch on every build: a restored build cache once left
+`tslib` (needed by Firebase) missing and broke the build.
 
 | Command        | Action                                        |
 | :------------- | :-------------------------------------------- |
