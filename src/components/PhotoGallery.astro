@@ -54,8 +54,6 @@ const galleryImages = (shuffled ? shuffle(images) : images).slice(0, limit)
 }
 
 <script>
-  import Swiper from 'swiper'
-  import { A11y, Autoplay, Navigation, Pagination } from 'swiper/modules'
   import 'swiper/css'
   import 'swiper/css/navigation'
   import 'swiper/css/pagination'
@@ -64,10 +62,15 @@ const galleryImages = (shuffled ? shuffle(images) : images).slice(0, limit)
     '(prefers-reduced-motion: reduce)'
   ).matches
 
-  // One Swiper per gallery section, each with its own arrows and dots
-  document.querySelectorAll<HTMLElement>('.gallery-section').forEach((section) => {
+  // One Swiper per gallery section, each with its own arrows and dots. Swiper is
+  // downloaded and set up only when a gallery nears the screen, so it doesn't
+  // compete with the hero and the loading screen.
+  const initGallery = async (section: HTMLElement) => {
     const container = section.querySelector<HTMLElement>('.swiper-container')
     if (!container) return
+
+    const [{ default: Swiper }, { A11y, Autoplay, Navigation, Pagination }] =
+      await Promise.all([import('swiper'), import('swiper/modules')])
 
     new Swiper(container, {
       modules: [A11y, Autoplay, Navigation, Pagination],
@@ -114,5 +117,19 @@ const galleryImages = (shuffled ? shuffle(images) : images).slice(0, limit)
             pauseOnMouseEnter: true,
           },
     })
-  })
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        observer.unobserve(entry.target)
+        initGallery(entry.target as HTMLElement)
+      }
+    },
+    { rootMargin: '800px 0px' }
+  )
+  document
+    .querySelectorAll<HTMLElement>('.gallery-section')
+    .forEach((section) => observer.observe(section))
 </script>

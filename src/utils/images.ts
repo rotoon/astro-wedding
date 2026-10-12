@@ -35,6 +35,7 @@ export const shuffle = <T>(items: readonly T[]): T[] => {
  */
 export const imageSize = (publicUrl: string): { width: number; height: number } | null => {
   const file = path.join(process.cwd(), 'public', publicUrl)
+  if (!fs.existsSync(file)) return null
   const buf = fs.readFileSync(file)
 
   // WebP: RIFF....WEBP then a VP8 / VP8L / VP8X chunk

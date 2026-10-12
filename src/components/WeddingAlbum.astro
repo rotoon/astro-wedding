@@ -3,7 +3,10 @@ import { afterWedding, couple } from '../data/wedding'
 import { imageSize, listPublicImages } from '../utils/images'
 
 interface Props {
-  /** Folder under public/ with the photos (file-name order); thumbs/ holds 640px copies */
+  /**
+   * Folder under public/ with the photos (file-name order); thumbs/ holds
+   * 640px copies and thumbs/sm/ 360px ones (long side) for phones
+   */
   folder: string
   title: string
 }
@@ -12,9 +15,26 @@ interface Props {
 const INITIAL_COUNT = 24
 
 const { folder, title } = Astro.props
+// Rows end up taller than --row once they stretch to the full width (matches
+// --row in global.css: 100px on phones, 230px on larger screens, where rows
+// stretch more)
+const rowHeight = (phone: boolean) => (phone ? 100 * 1.25 : 230 * 1.6)
+
 const photos = listPublicImages(folder).map((src) => {
   const size = imageSize(src) ?? { width: 3, height: 2 }
-  return { src, thumb: src.replace(`/${folder}/`, `/${folder}/thumbs/`), ...size }
+  const thumb = src.replace(`/${folder}/`, `/${folder}/thumbs/`)
+  const small = src.replace(`/${folder}/`, `/${folder}/thumbs/sm/`)
+  const ratio = size.width / size.height
+  const widthOf = (copy: string) => imageSize(copy)?.width
+  const [smallWidth, thumbWidth] = [widthOf(small), widthOf(thumb)]
+  return {
+    src,
+    thumb,
+    srcset:
+      smallWidth && thumbWidth ? `${small} ${smallWidth}w, ${thumb} ${thumbWidth}w` : undefined,
+    sizes: `(max-width: 767px) ${Math.round(ratio * rowHeight(true))}px, ${Math.round(ratio * rowHeight(false))}px`,
+    ...size,
+  }
 })
 const hiddenCount = Math.max(0, photos.length - INITIAL_COUNT)
 const label = (index: number) =>
@@ -41,6 +61,8 @@ const label = (index: number) =>
           >
             <img
               src={photo.thumb}
+              srcset={photo.srcset}
+              sizes={photo.sizes}
               width={photo.width}
               height={photo.height}
               alt=''
@@ -161,7 +183,7 @@ const label = (index: number) =>
     let touchStartX: number | null = null
     dialog.addEventListener('touchstart', (event) => {
       touchStartX = event.touches[0].clientX
-    })
+    }, { passive: true })
     dialog.addEventListener('touchend', (event) => {
       if (touchStartX === null) return
       const distance = touchStartX - event.changedTouches[0].clientX

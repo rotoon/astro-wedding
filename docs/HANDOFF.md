@@ -129,6 +129,9 @@ double-tap, เอกสารรูปแบบเก่า, realtime ข้า
 - **IntersectionObserver ไม่ทำงานกับ element ที่ `display: none`** — กำแพงคำอวยพรจึง observe ตัว section
 - `compressHTML: true` ตั้งไว้จงใจ (ค่า default ของ Astro 7 คือ `'jsx'` จะกินช่องว่างระหว่าง inline element)
 - รูป hero เป็นแนวตั้ง — จอกว้างใช้ `background-position: center 70%` และย้ายวันที่/ชื่อ (`@media (min-width: 992px) and (min-aspect-ratio: 5/4)`)
+- **ฟอนต์ self-host ผ่าน `@fontsource/*`** (ไม่ใช้ Google Fonts แล้ว) — เพิ่ม/ลด weight ที่ import ด้านบนของ `Layout.astro`
+- **รูปอัลบั้มวันงาน 3 ขนาด**: `img/wedding-day/` (เต็ม, เปิดใน lightbox), `thumbs/` (ด้านยาว 640px), `thumbs/sm/` (ด้านยาว 360px สำหรับมือถือ)
+  เพิ่มรูปใหม่ต้องทำทั้ง 3 ขนาด ถ้าไม่มี `thumbs/sm/` ก็ยังใช้ได้ (ตัด srcset ออกให้เอง)
 - `.hero-title` เคยมองไม่เห็นตั้งแต่ commit แรก (keyframes `fadeUp` ไม่มีอยู่จริง) — แก้แล้วใน PR #6
 
 ---

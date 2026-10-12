@@ -1,4 +1,20 @@
 ---
+// Self-hosted fonts (the same files Google Fonts serves): no third-party round
+// trips before text can render. Each weight's CSS covers every subset through
+// unicode-range, so browsers download only the scripts a page uses.
+import '@fontsource/bodoni-moda/400.css'
+import '@fontsource/bodoni-moda/500.css'
+import '@fontsource/bodoni-moda/600.css'
+import '@fontsource/cinzel/400.css'
+import '@fontsource/cinzel/500.css'
+import '@fontsource/montserrat/300.css'
+import '@fontsource/montserrat/400.css'
+import '@fontsource/montserrat/500.css'
+import '@fontsource/prompt/300.css'
+import '@fontsource/prompt/400.css'
+import '@fontsource/prompt/500.css'
+import headingFont from '@fontsource/bodoni-moda/files/bodoni-moda-latin-400-normal.woff2?url'
+import bodyFont from '@fontsource/montserrat/files/montserrat-latin-400-normal.woff2?url'
 import '../styles/global.css'
 import {
   ceremony,
@@ -12,11 +28,14 @@ import {
 interface Props {
   title?: string
   description?: string
+  /** Fetch the hero photo early (only the homepage shows it) */
+  preloadHero?: boolean
 }
 
 const {
   title = `${couple.title} | Just Married · ${dateDisplay.long}`,
   description = `${couple.bride.name} (${couple.bride.nickname}) & ${couple.groom.name} (${couple.groom.nickname}) were married on ${dateDisplay.long} at ${venue.shortName}. Relive the day, watch the film and leave us a wish.`,
+  preloadHero = true,
 } = Astro.props
 
 const canonicalURL = new URL(Astro.url.pathname, site.url).href
@@ -102,8 +121,6 @@ const eventSchema = {
   },
 }
 
-const fontsUrl =
-  'https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500;600&family=Cinzel:wght@400;500&family=Montserrat:wght@300;400;500&family=Prompt:wght@300;400;500&display=swap'
 ---
 
 <!doctype html>
@@ -140,24 +157,34 @@ const fontsUrl =
       set:html={JSON.stringify(eventSchema)}
     />
 
-    <!-- Resource hints for better performance -->
+    <!-- The loading screen's logo and text: fetch their fonts alongside the CSS
+         instead of after it -->
     <link
-      rel='preconnect'
-      href='https://fonts.googleapis.com'
+      rel='preload'
+      as='font'
+      type='font/woff2'
+      href={headingFont}
+      crossorigin
     />
     <link
-      rel='preconnect'
-      href='https://fonts.gstatic.com'
+      rel='preload'
+      as='font'
+      type='font/woff2'
+      href={bodyFont}
       crossorigin
     />
 
     <!-- Hero image is the first thing guests see; fetch it before the CSS asks for it -->
-    <link
-      rel='preload'
-      as='image'
-      href='/img/hero.webp'
-      fetchpriority='high'
-    />
+    {
+      preloadHero && (
+        <link
+          rel='preload'
+          as='image'
+          href='/img/hero.webp'
+          fetchpriority='high'
+        />
+      )
+    }
 
     <!-- Critical CSS for faster rendering -->
     <style is:inline>
@@ -203,20 +230,6 @@ const fontsUrl =
       }
     </style>
 
-    <!-- Optimized font loading - display=swap ensures text remains visible during font loading -->
-    <link
-      href={fontsUrl}
-      rel='stylesheet'
-      media='print'
-      onload="this.setAttribute('media', 'all')"
-    />
-    <!-- Font fallback in case the above doesn't load -->
-    <noscript>
-      <link
-        href={fontsUrl}
-        rel='stylesheet'
-      />
-    </noscript>
   </head>
   <body>
     <div class='noise-overlay'></div>

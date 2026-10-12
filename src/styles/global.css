@@ -756,6 +756,8 @@ button:focus-visible,
   --swiper-pagination-bullet-inactive-color: var(--light-color);
   --swiper-pagination-bullet-inactive-opacity: 0.5;
   --swiper-pagination-bullet-size: 10px;
+  /* Dots 26px apart: each stays a separate tap target (Lighthouse target-size) */
+  --swiper-pagination-bullet-horizontal-gap: 8px;
   --swiper-pagination-bottom: 0px;
 }
 
@@ -820,7 +822,7 @@ button:focus-visible,
 
   .gallery-section {
     --swiper-pagination-bullet-size: 12px;
-    --swiper-pagination-bullet-horizontal-gap: 5px;
+    --swiper-pagination-bullet-horizontal-gap: 7px;
   }
 
   /* Arrows sit over the slides at the edges. The .gallery-section prefix gives

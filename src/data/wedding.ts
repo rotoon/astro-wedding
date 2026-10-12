@@ -25,6 +25,8 @@ export const couple = {
     birthday: 'September 8, 1989',
     description: 'Developer, passionate about travel',
     photo: '/img/groom.webp',
+    /** Small copy for the 120px round bio photo */
+    avatar: '/img/groom-avatar.webp',
   },
   bride: {
     name: 'Suchanya',
@@ -33,6 +35,7 @@ export const couple = {
     birthday: 'September 27, 1990',
     description: 'Food and Beverage, loves photography and coffee',
     photo: '/img/bride.webp',
+    avatar: '/img/bride-avatar.webp',
   },
 } as const
 
