@@ -9,8 +9,8 @@ const TIME_ZONE = 'Asia/Bangkok'
 export const site = {
   url: 'https://ststarttogether.vercel.app/',
   name: 'SOM&TOON START TOGETHER',
-  ogImage: '/img/og-cover.webp',
-  twitterHandle: '@weddingthailand',
+  /** JPEG at 1200x630: the size and format every share preview accepts */
+  ogImage: '/img/og-cover.jpg',
   themeColor: '#7b5c43',
 } as const
 
@@ -25,6 +25,8 @@ export const couple = {
     birthday: 'September 8, 1989',
     description: 'Developer, passionate about travel',
     photo: '/img/groom.webp',
+    /** Small copy for the 120px round bio photo */
+    avatar: '/img/groom-avatar.webp',
   },
   bride: {
     name: 'Suchanya',
@@ -33,6 +35,7 @@ export const couple = {
     birthday: 'September 27, 1990',
     description: 'Food and Beverage, loves photography and coffee',
     photo: '/img/bride.webp',
+    avatar: '/img/bride-avatar.webp',
   },
 } as const
 

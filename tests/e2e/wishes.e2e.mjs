@@ -71,14 +71,15 @@ await form.waitForSelector('.wishes-status.sent', { timeout: 20000 })
 check('success message after send', true)
 await form.waitForURL(`http://localhost:${PORT}/wishes/`, { timeout: 5000 })
 check('redirected back to /wishes/', true)
-await form.waitForSelector('.wish-card', { timeout: 15000 })
-const card = form.locator('.wish-card').first()
+// Real cards only (:not(.wish-skeleton)): the feed shows placeholder cards while loading
+await form.waitForSelector('.wish-card:not(.wish-skeleton)', { timeout: 15000 })
+const card = form.locator('.wish-card:not(.wish-skeleton)').first()
 check('new wish appears in feed', (await card.textContent()).includes('ทดสอบ แขกคนแรก'))
 check('message keeps line break', (await card.locator('.wish-message').innerText()).includes('\n'))
 check('2 photos → carousel', (await card.locator('.wish-carousel img').count()) === 2)
 const imgOk = await card.locator('.wish-carousel img').first().evaluate(async (img) => { await img.decode().catch(()=>{}); return [img.naturalWidth, img.naturalHeight] })
 check('uploaded photo served from storage and resized to ≤1200px', imgOk[0] > 0 && Math.max(...imgOk) <= 1200, imgOk.join('x'))
-check('first page had the realtime wish (feed page A)', (await p.locator('.wish-card').count()) === 1, 'realtime into the tab opened before posting')
+check('first page had the realtime wish (feed page A)', (await p.locator('.wish-card:not(.wish-skeleton)').count()) === 1, 'realtime into the tab opened before posting')
 
 // stored doc shape
 const stored = await (await fetch(`${FS}/wishes`, { headers: owner })).json()
@@ -99,7 +100,7 @@ await likeBtn.click(); await form.waitForTimeout(800)
 check('second like ignored', (await likeBtn.textContent()).trim() === '1')
 const afterLike = await (await fetch(`${FS}/wishes`, { headers: owner })).json()
 check('server reactions = 1', afterLike.documents[0].fields.reactions.integerValue === '1', afterLike.documents[0].fields.reactions.integerValue)
-await form.reload(); await form.waitForSelector('.wish-card')
+await form.reload(); await form.waitForSelector('.wish-card:not(.wish-skeleton)')
 check('liked state remembered after reload', (await form.locator('.wish-like').first().getAttribute('aria-pressed')) === 'true')
 
 // ---------- 6. Legacy docs + double-tap ----------
@@ -107,29 +108,29 @@ await seed({ name: { stringValue: 'Legacy single photo' }, message: { stringValu
 function imgSrc() { return f0.photoURLs.arrayValue.values[0].stringValue }
 await seed({ name: { stringValue: 'No photos' }, message: { stringValue: 'text only' }, photoURLs: { nullValue: null }, reactions: { integerValue: '0' }, createdAt: { timestampValue: new Date(Date.now() - 86400e3 * 31).toISOString() } })
 await form.waitForTimeout(1500)
-const legacy = form.locator('.wish-card', { hasText: 'Legacy single photo' })
+const legacy = form.locator('.wish-card:not(.wish-skeleton)', { hasText: 'Legacy single photo' })
 check('legacy photoURL doc renders single image', (await legacy.locator('img.wish-photo').count()) === 1)
 check('old wish shows a date, not "30 วันที่แล้ว"', /2569|2026/.test(await legacy.locator('.wish-date').textContent()), await legacy.locator('.wish-date').textContent())
-check('text-only doc renders without photos', (await form.locator('.wish-card', { hasText: 'No photos' }).locator('img').count()) === 0)
+check('text-only doc renders without photos', (await form.locator('.wish-card:not(.wish-skeleton)', { hasText: 'No photos' }).locator('img').count()) === 0)
 await legacy.locator('.wish-photos').dblclick(); await form.waitForTimeout(800)
 check('double-tap photo likes', (await legacy.locator('.wish-like').textContent()).trim() === '4')
 
 // ---------- 7. Realtime into another open tab ----------
-const before = await p.locator('.wish-card').count()
+const before = await p.locator('.wish-card:not(.wish-skeleton)').count()
 await seed({ name: { stringValue: 'Realtime guest' }, message: { stringValue: 'hello live' }, photoURLs: { nullValue: null }, reactions: { integerValue: '0' }, createdAt: { timestampValue: new Date().toISOString() } })
-await p.waitForSelector('.wish-card >> text=Realtime guest', { timeout: 10000 }).catch(() => {})
-check('new wish appears live in other tab', (await p.locator('.wish-card').count()) === before + 1)
+await p.waitForSelector('.wish-card:not(.wish-skeleton) >> text=Realtime guest', { timeout: 10000 }).catch(() => {})
+check('new wish appears live in other tab', (await p.locator('.wish-card:not(.wish-skeleton)').count()) === before + 1)
 
 // ---------- 8. Infinite scroll ----------
 for (let i = 0; i < 25; i++) await seed({ name: { stringValue: `Seed ${i}` }, message: { stringValue: `seed wish ${i}` }, photoURLs: { nullValue: null }, reactions: { integerValue: '0' }, createdAt: { timestampValue: new Date(Date.now() - 86400e3 * (40 + i)).toISOString() } })
 const total = (await (await fetch(`${FS}/wishes?pageSize=100`, { headers: owner })).json()).documents.length
 const inf = await page()
-await inf.goto(`http://localhost:${PORT}/wishes/`); await inf.waitForSelector('.wish-card')
-check('first page = 10', (await inf.locator('.wish-card').count()) === 10)
+await inf.goto(`http://localhost:${PORT}/wishes/`); await inf.waitForSelector('.wish-card:not(.wish-skeleton)')
+check('first page = 10', (await inf.locator('.wish-card:not(.wish-skeleton)').count()) === 10)
 for (let i = 0; i < 8; i++) { await inf.mouse.wheel(0, 4000); await inf.waitForTimeout(500) }
-check(`all ${total} wishes after scrolling`, (await inf.locator('.wish-card').count()) === total, String(await inf.locator('.wish-card').count()))
+check(`all ${total} wishes after scrolling`, (await inf.locator('.wish-card:not(.wish-skeleton)').count()) === total, String(await inf.locator('.wish-card:not(.wish-skeleton)').count()))
 check('end message shown', (await inf.textContent('.wishes-feed')).includes('ครบทั้งหมดแล้ว'))
-const ids = await inf.locator('.wish-card').evaluateAll(els => els.map(e => e.id))
+const ids = await inf.locator('.wish-card:not(.wish-skeleton)').evaluateAll(els => els.map(e => e.id))
 check('no duplicate cards', new Set(ids).size === ids.length)
 
 // ---------- 9. Homepage wall ----------
@@ -152,9 +153,9 @@ check('HTML in a wish is shown as text on the wall', !dialog && (await home2.loc
 const foreign = await home2.evaluate(() => [...document.querySelectorAll('#wishes img, #wishes a')].map(e => e.getAttribute('src') || e.getAttribute('href')).filter(u => /javascript:|example\.com/.test(u)))
 check('wall drops photo URLs outside our Storage', foreign.length === 0 && (await home2.locator('.guest-photo').count()) === 1, foreign.join(' '))
 const feed2 = await page(); feed2.on('dialog', d => { dialog = true; d.dismiss() })
-await feed2.goto(`http://localhost:${PORT}/wishes/`); await feed2.waitForSelector('.wish-card')
-check('HTML in a wish is shown as text in the feed', !dialog && (await feed2.locator('.wish-card b').count()) === 0)
-check('feed drops photo URLs outside our Storage', (await feed2.locator('.wish-card img[src*="example.com"], .wish-card img[src^="javascript:"]').count()) === 0)
+await feed2.goto(`http://localhost:${PORT}/wishes/`); await feed2.waitForSelector('.wish-card:not(.wish-skeleton)')
+check('HTML in a wish is shown as text in the feed', !dialog && (await feed2.locator('.wish-card:not(.wish-skeleton) b').count()) === 0)
+check('feed drops photo URLs outside our Storage', (await feed2.locator('.wish-card:not(.wish-skeleton) img[src*="example.com"], .wish-card:not(.wish-skeleton) img[src^="javascript:"]').count()) === 0)
 
 // ---------- 10. Security rules (unauthenticated REST, like a malicious client) ----------
 const ts = new Date().toISOString()

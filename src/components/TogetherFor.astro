@@ -52,7 +52,6 @@ const units = [
 
 <script>
   import { timeTogether, type Together } from '../utils/anniversary'
-  import { onIntroDone } from '../scripts/intro'
 
   const COUNT_UP_MS = 1500
   const PETALS_SEEN_KEY = 'anniversaryPetals'
@@ -124,9 +123,8 @@ const units = [
       },
       { threshold: 0.5 }
     )
-    // Wait for the loading screen, so the count runs where the guest can see it
-    onIntroDone(() => observer.observe(root))
+    observer.observe(root)
   }
 
-  onIntroDone(maybePetals)
+  maybePetals()
 </script>

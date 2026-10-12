@@ -15,8 +15,9 @@ export default defineConfig({
   compressHTML: true,
 
   build: {
-    // Inline small stylesheets, link the rest
-    inlineStylesheets: 'auto',
+    // Inline the CSS: a few kB per page, and no render-blocking request
+    // between the HTML and the first paint
+    inlineStylesheets: 'always',
 
     // Output folder for bundled JS/CSS
     assets: 'assets',

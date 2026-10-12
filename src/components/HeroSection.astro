@@ -3,11 +3,21 @@ import { afterWedding, couple, dateParts } from '../data/wedding'
 ---
 
 <div class='parallax-hero'>
-  <div
+  <!-- The first thing guests see: a real <img> (not a CSS background) so the
+       browser finds it in the HTML, fetches it first and picks the size for the
+       screen. The portrait photo covers the hero: on screens narrower than 2:3
+       its width is 2/3 of the height. -->
+  <img
     class='parallax-layer hero-bg'
     data-speed='0.2'
-  >
-  </div>
+    src='/img/hero-1200.webp'
+    srcset='/img/hero-800.webp 800w, /img/hero-1000.webp 1000w, /img/hero-1200.webp 1200w, /img/hero-1600.webp 1600w, /img/hero.webp 2000w'
+    sizes='(max-aspect-ratio: 2/3) 67vh, 100vw'
+    width='2000'
+    height='3000'
+    alt=''
+    fetchpriority='high'
+  />
   <div
     class='parallax-layer hero-overlay'
     data-speed='0.1'
@@ -53,16 +63,15 @@ import { afterWedding, couple, dateParts } from '../data/wedding'
 
   const parallaxElements =
     document.querySelectorAll<HTMLElement>('.parallax-layer')
-  const viewportHeight = window.innerHeight
   const prefersReducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)'
   ).matches
 
   // RAF-based throttling: at most one transform update per frame
   const updateParallax = throttle(() => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const scrollTop = window.scrollY
 
-    if (scrollTop <= viewportHeight) {
+    if (scrollTop <= window.innerHeight) {
       parallaxElements.forEach((element) => {
         const speed = parseFloat(element.getAttribute('data-speed') || '0')
         const yPos = -(scrollTop * speed)
@@ -78,10 +87,22 @@ import { afterWedding, couple, dateParts } from '../data/wedding'
   })
 
   if (!prefersReducedMotion) {
-    // Add event listener with passive option for better performance
     window.addEventListener('scroll', updateParallax, { passive: true })
 
-    // Initial update
-    updateParallax()
+    // Starting position (zoomed in), applied once the photo has been painted at
+    // its normal size: Chrome doesn't count an image larger than the viewport
+    // as the page's main content (LCP), so it must not start zoomed. Written
+    // without reading the scroll position (a read during page load forces an
+    // extra layout); a page restored mid-scroll fires a scroll event instead.
+    const heroImage = document.querySelector<HTMLImageElement>('.hero-bg')
+    heroImage
+      ?.decode()
+      .catch(() => {})
+      .then(() =>
+        // Two frames: the first paints the photo, the second starts the zoom
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => heroImage.style.setProperty('transform', 'scale(1.1)'))
+        )
+      )
   }
 </script>
