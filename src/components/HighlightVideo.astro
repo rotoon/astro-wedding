@@ -3,6 +3,9 @@ import { afterWedding, couple } from '../data/wedding'
 
 const videoId = afterWedding.highlightVideoId
 const title = `${couple.bride.nickname} & ${couple.groom.nickname} — Wedding Highlight`
+// YouTube's thumbnails as WebP; maxresdefault only exists for HD uploads, so a
+// failed load falls back to hqdefault (always there)
+const thumbBase = `https://i.ytimg.com/vi_webp/${videoId}`
 ---
 
 {
@@ -20,8 +23,10 @@ const title = `${couple.bride.nickname} & ${couple.groom.nickname} — Wedding H
           aria-label={`Play video: ${title}`}
         >
           <img
-            src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`}
-            onerror={`this.onerror=null;this.src='https://i.ytimg.com/vi/${videoId}/hqdefault.jpg'`}
+            src={`${thumbBase}/hqdefault.webp`}
+            srcset={`${thumbBase}/hqdefault.webp 480w, ${thumbBase}/maxresdefault.webp 1280w`}
+            sizes='(max-width: 960px) 100vw, 960px'
+            onerror={`this.onerror=null;this.removeAttribute('srcset');this.src='${thumbBase}/hqdefault.jpg'`}
             alt=''
             loading='lazy'
             decoding='async'

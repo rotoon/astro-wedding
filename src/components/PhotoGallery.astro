@@ -46,8 +46,16 @@ const galleryImages = (shuffled ? shuffle(images) : images).slice(0, limit)
         <div class='swiper-pagination'></div>
       </div>
       <div class='gallery-controls'>
-        <div class='swiper-button-prev'></div>
-        <div class='swiper-button-next'></div>
+        <button
+          type='button'
+          class='swiper-button-prev'
+          aria-label='Previous photo'
+        ></button>
+        <button
+          type='button'
+          class='swiper-button-next'
+          aria-label='Next photo'
+        ></button>
       </div>
     </section>
   )

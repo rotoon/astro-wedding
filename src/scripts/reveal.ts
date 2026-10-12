@@ -1,13 +1,7 @@
 /**
  * Scroll reveal for `.reveal-title` and `.reveal-item`:
  * adds `.visible` (see global.css) when an element scrolls into view.
- *
- * Starts once the loading screen has gone (the `intro:done` event from
- * LoadingAnimation), so elements already in view animate in front of the guest
- * instead of behind the loading screen.
  */
-import { onIntroDone } from './intro'
-
 const SELECTOR = '.reveal-title, .reveal-item'
 const STAGGER_MS = 80 // delay between elements of the same section
 
@@ -51,4 +45,4 @@ const setupReveal = () => {
   })
 }
 
-onIntroDone(setupReveal)
+setupReveal()

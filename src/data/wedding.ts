@@ -9,8 +9,8 @@ const TIME_ZONE = 'Asia/Bangkok'
 export const site = {
   url: 'https://ststarttogether.vercel.app/',
   name: 'SOM&TOON START TOGETHER',
-  ogImage: '/img/og-cover.webp',
-  twitterHandle: '@weddingthailand',
+  /** JPEG at 1200x630: the size and format every share preview accepts */
+  ogImage: '/img/og-cover.jpg',
   themeColor: '#7b5c43',
 } as const
 

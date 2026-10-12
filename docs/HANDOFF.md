@@ -62,11 +62,10 @@ src/pages/index.astro      ← หน้าแรก (ลำดับ section)
 src/pages/wishes/          ← /wishes (feed) และ /wishes/new (ฟอร์ม)
 src/features/wishes/       ← สมุดอวยพร: config, firebase, api, hooks (React Query), components, wishes.css
 src/components/            ← 1 component ต่อ 1 section
-src/scripts/intro.ts       ← สัญญาณ "หน้าโหลดจบแล้ว" (reveal รอสัญญาณนี้)
 src/utils/anniversary.ts   ← Together for X years/months/days (นับวันตามเวลาไทย)
 src/styles/global.css      ← CSS ทั้งหมดของหน้าหลัก
 firebase/                  ← Firestore/Storage rules (+ firebase.json, .firebaserc ที่ root)
-vercel.json                ← บังคับติดตั้ง dependency ใหม่ทุก build (ดู §6)
+vercel.json                ← บังคับติดตั้ง dependency ใหม่ทุก build (ดู §6) + cache header
 tests/e2e/                 ← e2e สมุดอวยพร + รูปทดสอบ
 ```
 
@@ -95,7 +94,6 @@ tests/e2e/                 ← e2e สมุดอวยพร + รูปทด
 ### ไอเดียที่ยังไม่ได้ทำ (ไม่จำเป็น)
 - Firebase **App Check** กันสแปม — ตอนนี้ใครก็โพสต์/อัปโหลดรูปได้ (rules จำกัดขนาด/ฟิลด์แล้ว แต่ไม่ได้ยืนยันตัวตน)
 - ไลก์จำแค่ใน localStorage ต่อเบราว์เซอร์ (ล้าง storage แล้วไลก์ซ้ำได้) — เหมือนแอปเดิม
-- `og-cover.webp` บางแพลตฟอร์มไม่รองรับ WebP — มี `/opengraph.jpg` อยู่แล้ว เปลี่ยน `site.ogImage` ได้ถ้าเจอปัญหา
 
 ---
 
@@ -130,6 +128,9 @@ double-tap, เอกสารรูปแบบเก่า, realtime ข้า
 - `compressHTML: true` ตั้งไว้จงใจ (ค่า default ของ Astro 7 คือ `'jsx'` จะกินช่องว่างระหว่าง inline element)
 - รูป hero เป็นแนวตั้ง — จอกว้างใช้ `background-position: center 70%` และย้ายวันที่/ชื่อ (`@media (min-width: 992px) and (min-aspect-ratio: 5/4)`)
 - **ฟอนต์ self-host ผ่าน `@fontsource/*`** (ไม่ใช้ Google Fonts แล้ว) — เพิ่ม/ลด weight ที่ import ด้านบนของ `Layout.astro`
+- **รูปใน `/img/` cache 30 วัน** (`vercel.json`) — ถ้าเปลี่ยนรูป ให้ตั้งชื่อไฟล์ใหม่ ไม่งั้นแขกบางคนจะเห็นรูปเก่า; `/assets/` (ไฟล์มี hash) cache 1 ปี
+- **รูป hero มี 4 ขนาด**: `hero-800/1200/1600.webp`, `hero.webp` (2000px) — เปลี่ยนรูปต้องทำทั้ง 4 (ดู `srcset` ใน `HeroSection.astro`)
+- ไม่มีหน้าโหลด (loading screen) แล้ว — เอาออกเพื่อให้ hero ขึ้นทันที
 - **รูปอัลบั้มวันงาน 3 ขนาด**: `img/wedding-day/` (เต็ม, เปิดใน lightbox), `thumbs/` (ด้านยาว 640px), `thumbs/sm/` (ด้านยาว 360px สำหรับมือถือ)
   เพิ่มรูปใหม่ต้องทำทั้ง 3 ขนาด ถ้าไม่มี `thumbs/sm/` ก็ยังใช้ได้ (ตัด srcset ออกให้เอง)
 - `.hero-title` เคยมองไม่เห็นตั้งแต่ commit แรก (keyframes `fadeUp` ไม่มีอยู่จริง) — แก้แล้วใน PR #6
