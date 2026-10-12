@@ -129,7 +129,7 @@ double-tap, เอกสารรูปแบบเก่า, realtime ข้า
 - รูป hero เป็นแนวตั้ง — จอกว้างใช้ `background-position: center 70%` และย้ายวันที่/ชื่อ (`@media (min-width: 992px) and (min-aspect-ratio: 5/4)`)
 - **ฟอนต์ self-host ผ่าน `@fontsource/*`** (ไม่ใช้ Google Fonts แล้ว) — เพิ่ม/ลด weight ที่ import ด้านบนของ `Layout.astro`
 - **รูปใน `/img/` cache 30 วัน** (`vercel.json`) — ถ้าเปลี่ยนรูป ให้ตั้งชื่อไฟล์ใหม่ ไม่งั้นแขกบางคนจะเห็นรูปเก่า; `/assets/` (ไฟล์มี hash) cache 1 ปี
-- **รูป hero มี 4 ขนาด**: `hero-800/1200/1600.webp`, `hero.webp` (2000px) — เปลี่ยนรูปต้องทำทั้ง 4 (ดู `srcset` ใน `HeroSection.astro`)
+- **รูป hero มี 5 ขนาด**: `hero-800/1000/1200/1600.webp`, `hero.webp` (2000px) — เปลี่ยนรูปต้องทำทั้ง 5 (ดู `srcset` ใน `HeroSection.astro`)
 - ไม่มีหน้าโหลด (loading screen) แล้ว — เอาออกเพื่อให้ hero ขึ้นทันที
 - **รูปอัลบั้มวันงาน 3 ขนาด**: `img/wedding-day/` (เต็ม, เปิดใน lightbox), `thumbs/` (ด้านยาว 640px), `thumbs/sm/` (ด้านยาว 360px สำหรับมือถือ)
   เพิ่มรูปใหม่ต้องทำทั้ง 3 ขนาด ถ้าไม่มี `thumbs/sm/` ก็ยังใช้ได้ (ตัด srcset ออกให้เอง)

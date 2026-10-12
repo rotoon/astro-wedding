@@ -363,6 +363,15 @@ button:focus-visible,
   z-index: 2;
 }
 
+/* Sections below the first screen skip style, layout and paint (and their CSS
+   background images) until they come near the viewport. `auto` remembers each
+   section's real height once it has been rendered, so the scrollbar settles. */
+.invitation-content > section:not(:first-child),
+.invitation-content > footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 /* --- Common Section Title Styles --- */
 .section-title {
   font-family: var(--heading-font);
