@@ -1,0 +1,181 @@
+---
+import { afterWedding, couple } from '../data/wedding'
+import { imageSize, listPublicImages } from '../utils/images'
+
+interface Props {
+  /** Folder under public/ with the photos (file-name order); thumbs/ holds 640px copies */
+  folder: string
+  title: string
+}
+
+// Photos shown before "see more"
+const INITIAL_COUNT = 24
+
+const { folder, title } = Astro.props
+const photos = listPublicImages(folder).map((src) => {
+  const size = imageSize(src) ?? { width: 3, height: 2 }
+  return { src, thumb: src.replace(`/${folder}/`, `/${folder}/thumbs/`), ...size }
+})
+const hiddenCount = Math.max(0, photos.length - INITIAL_COUNT)
+const label = (index: number) =>
+  `${couple.bride.nickname} & ${couple.groom.nickname}, ${title}, photo ${index + 1} of ${photos.length}`
+---
+
+<!-- The day's photos as a justified grid: rows of equal height, every photo
+     whole (nobody at the edge of a group photo gets cropped). Tap to enlarge. -->
+{
+  photos.length > 0 && (
+    <section class='album-section'>
+      <div class='section-decorative-line' />
+      <h2 class='section-title reveal-title'>{title}</h2>
+
+      <div class='album-grid'>
+        {photos.map((photo, index) => (
+          <button
+            type='button'
+            class='album-item'
+            style={`--w: ${photo.width}; --h: ${photo.height}`}
+            data-full={photo.src}
+            hidden={index >= INITIAL_COUNT}
+            aria-label={`${label(index)} (open)`}
+          >
+            <img
+              src={photo.thumb}
+              width={photo.width}
+              height={photo.height}
+              alt=''
+              loading='lazy'
+              decoding='async'
+            />
+          </button>
+        ))}
+      </div>
+
+      <div class='album-actions'>
+        {hiddenCount > 0 && (
+          <button
+            type='button'
+            class='map-nav-btn album-more'
+          >
+            ดูรูปเพิ่มอีก {hiddenCount} รูป
+          </button>
+        )}
+        {afterWedding.albumUrl && (
+          <a
+            class='wishes-wall-link'
+            href={afterWedding.albumUrl}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            ดูรูปทั้งหมดจากวันงาน ↗
+          </a>
+        )}
+      </div>
+
+      <dialog
+        class='album-lightbox'
+        aria-label={title}
+      >
+        <img
+          class='album-lightbox-image'
+          alt=''
+        />
+        <p class='album-lightbox-count' />
+        <button
+          type='button'
+          class='album-lightbox-btn album-lightbox-close'
+          aria-label='Close'
+        >
+          ×
+        </button>
+        <button
+          type='button'
+          class='album-lightbox-btn album-lightbox-prev'
+          aria-label='Previous photo'
+        >
+          ‹
+        </button>
+        <button
+          type='button'
+          class='album-lightbox-btn album-lightbox-next'
+          aria-label='Next photo'
+        >
+          ›
+        </button>
+      </dialog>
+    </section>
+  )
+}
+
+<script>
+  const SWIPE_DISTANCE = 50 // px
+
+  const section = document.querySelector<HTMLElement>('.album-section')
+  const dialog = section?.querySelector<HTMLDialogElement>('.album-lightbox')
+
+  if (section && dialog) {
+    const items = Array.from(section.querySelectorAll<HTMLElement>('.album-item'))
+    const image = dialog.querySelector<HTMLImageElement>('.album-lightbox-image')!
+    const count = dialog.querySelector<HTMLElement>('.album-lightbox-count')!
+    let current = 0
+
+    const show = (index: number) => {
+      current = (index + items.length) % items.length
+      image.src = items[current].dataset.full ?? ''
+      image.alt = items[current].getAttribute('aria-label')?.replace(' (open)', '') ?? ''
+      count.textContent = `${current + 1} / ${items.length}`
+      // Warm the cache for the neighbours so prev/next feel instant
+      ;[current - 1, current + 1].forEach((i) => {
+        const src = items[(i + items.length) % items.length].dataset.full
+        if (src) new Image().src = src
+      })
+    }
+
+    const open = (index: number) => {
+      show(index)
+      dialog.showModal()
+      document.documentElement.style.overflow = 'hidden'
+    }
+
+    dialog.addEventListener('close', () => {
+      document.documentElement.style.overflow = ''
+      // Back to the photo you were on, or "see more" if it is still folded away
+      const target = items[current].hidden ? section.querySelector<HTMLElement>('.album-more') : items[current]
+      target?.focus({ preventScroll: true })
+    })
+
+    items.forEach((item, index) => item.addEventListener('click', () => open(index)))
+
+    dialog.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement
+      if (target === dialog || target.closest('.album-lightbox-close')) dialog.close()
+      else if (target.closest('.album-lightbox-prev')) show(current - 1)
+      else if (target.closest('.album-lightbox-next')) show(current + 1)
+    })
+
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') show(current - 1)
+      else if (event.key === 'ArrowRight') show(current + 1)
+    })
+
+    let touchStartX: number | null = null
+    dialog.addEventListener('touchstart', (event) => {
+      touchStartX = event.touches[0].clientX
+    })
+    dialog.addEventListener('touchend', (event) => {
+      if (touchStartX === null) return
+      const distance = touchStartX - event.changedTouches[0].clientX
+      if (Math.abs(distance) > SWIPE_DISTANCE) show(current + (distance > 0 ? 1 : -1))
+      touchStartX = null
+    })
+
+    // "See more": reveal the rest of the photos
+    const more = section.querySelector<HTMLButtonElement>('.album-more')
+    more?.addEventListener('click', () => {
+      const hidden = items.filter((item) => item.hidden)
+      hidden.forEach((item) => (item.hidden = false))
+      more.remove()
+      hidden[0]?.focus({ preventScroll: true })
+    })
+  }
+</script>

@@ -11,6 +11,7 @@ import ThankYou from '../components/ThankYou.astro'
 import WishesWall from '../components/WishesWall.astro'
 import Map from '../components/Map.astro'
 import Footer from '../components/Footer.astro'
+import WeddingAlbum from '../components/WeddingAlbum.astro'
 ---
 
 <Layout>
@@ -21,10 +22,9 @@ import Footer from '../components/Footer.astro'
     <div class='invitation-content'>
       <ThankYou />
       <!-- Shown once photos are added to public/img/wedding-day -->
-      <PhotoGallery
+      <WeddingAlbum
         folder='img/wedding-day'
         title='Our Wedding Day'
-        shuffled={false}
       />
       <!-- Shown once afterWedding.highlightVideoId is set in src/data/wedding.ts -->
       <HighlightVideo />
