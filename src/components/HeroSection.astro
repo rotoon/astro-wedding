@@ -1,5 +1,7 @@
 ---
 import { afterWedding, couple, dateParts } from '../data/wedding'
+
+const heroAlt = `${couple.bride.nickname} and ${couple.groom.nickname} walking hand in hand on a hillside at sunset`
 ---
 
 <div class='parallax-hero'>
@@ -15,7 +17,7 @@ import { afterWedding, couple, dateParts } from '../data/wedding'
     sizes='(max-aspect-ratio: 2/3) 67vh, 100vw'
     width='2000'
     height='3000'
-    alt=''
+    alt={heroAlt}
     fetchpriority='high'
   />
   <div
@@ -74,10 +76,15 @@ import { afterWedding, couple, dateParts } from '../data/wedding'
     if (scrollTop <= window.innerHeight) {
       parallaxElements.forEach((element) => {
         const speed = parseFloat(element.getAttribute('data-speed') || '0')
-        const yPos = -(scrollTop * speed)
+        // The layers move down a little as the page scrolls up, so they lag
+        // behind the content. Moving them up instead uncovered the bottom of
+        // the hero (a bare strip under the photo while scrolling).
+        const yPos = scrollTop * speed
 
         if (element.classList.contains('hero-bg')) {
-          const scale = 1.1 - scrollTop * 0.0002
+          // Eases from the starting zoom towards 1, never below: smaller would
+          // leave the edges of the hero uncovered
+          const scale = Math.max(1, 1.1 - scrollTop * 0.0001)
           element.style.transform = `scale(${scale}) translateY(${yPos}px)`
         } else {
           element.style.transform = `translateY(${yPos}px)`
