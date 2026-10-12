@@ -114,4 +114,9 @@ export const afterWedding = {
    * Leave empty to hide the video section.
    */
   highlightVideoId: 'xKU4cAmpGvI',
+  /**
+   * Shared Google Drive folder with every photo of the day ("Anyone with the
+   * link", viewer). Leave empty to hide the button.
+   */
+  albumUrl: 'https://drive.google.com/drive/folders/1oSVSqioTUrKSXwiHzmJjL9CAUt37E50T',
 } as const
